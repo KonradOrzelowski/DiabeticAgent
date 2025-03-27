@@ -3,7 +3,6 @@ import json
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import pandas as pd
-from bson import json_util
 
 import matplotlib
 matplotlib.use('TkAgg')
@@ -55,17 +54,12 @@ try:
     data = list(documents)
 
     df = pd.DataFrame(data)
-    # Convert 'created_at' to datetime
-    df['created_at'] = pd.to_datetime(df['created_at'])
-    df = df.sort_values(by = 'created_at')
-    # Initialize the plot
-    plt.figure(figsize=(10, 6))
 
-    # Loop through each row and plot horizontal lines for each event
-    for index, row in df.iterrows():
-        start_time = row['created_at']
-        end_time = start_time + pd.to_timedelta(row['duration'], unit='m')
-        plt.hlines(y=row['rate'], xmin=start_time, xmax=end_time, color='b', linewidth=4)
+    df['created_at'] = pd.to_datetime(df['created_at'])
+    df.sort_values(by = 'created_at')
+    # Plot the basal insulin rate over time
+    plt.figure(figsize=(10, 6))
+    plt.plot(df['created_at'], df['rate'], marker='o', linestyle='-', color='b', label='Basal Rate')
 
     # Labeling the plot
     plt.title('Basal Insulin Rate Over Time')
@@ -73,6 +67,7 @@ try:
     plt.ylabel('Basal Rate (units/min)')
     plt.xticks(rotation=45)
     plt.grid(True)
+    plt.legend()
 
     # Show plot
     plt.tight_layout()
