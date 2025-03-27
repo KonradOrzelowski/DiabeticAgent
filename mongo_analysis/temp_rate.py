@@ -21,8 +21,8 @@ MONGO_PASS = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
 # MongoDB URI
 MONGO_URI = f"mongodb://{MONGO_USER}:{MONGO_PASS}@{MONGO_HOST}:{MONGO_PORT}/"
 
-def get_date(dataframe, date_column, year, month, day):
-    d = dataframe[date_column].copy()
+def get_date(dataframe, year, month, day):
+    d = dataframe['created_at'].copy()
 
     is_year = d.dt.year == year
     is_month = d.dt.month == month
@@ -41,24 +41,44 @@ try:
     # Get all collections in 'diabetic_records' database
     collections = db.list_collection_names()
 
-    collection = db['Entries']
+    unique_structures = {}
 
+    collection = db['Treatments']
+
+    # Get all documents from the collection
     documents = collection.find({
-        'sgv': {'$exists': True},
-        'dateString': {'$regex': '^2023-12-31'}
+        'rate': {'$exists': True},
+        'created_at': {'$regex': '^2023-12-31'}
     })
+    
     
     data = list(documents)
 
     df = pd.DataFrame(data)
+    # Convert 'created_at' to datetime
+    df['created_at'] = pd.to_datetime(df['created_at'])
+    df = df.sort_values(by = 'created_at')
+    # Initialize the plot
+    plt.figure(figsize=(10, 6))
 
-    df['dateString'] = pd.to_datetime(df['dateString'])
-    
+    # Loop through each row and plot horizontal lines for each event
+    for index, row in df.iterrows():
+        start_time = row['created_at']
+        end_time = start_time + pd.to_timedelta(row['duration'], unit='m')
+        plt.hlines(y=row['rate'], xmin=start_time, xmax=end_time, color='b', linewidth=4)
 
-    # print()[['dateString', 'sgv']]
+    # Labeling the plot
+    plt.title('Basal Insulin Rate Over Time')
+    plt.xlabel('Time')
+    plt.ylabel('Basal Rate (units/min)')
+    plt.xticks(rotation=45)
+    plt.grid(True)
 
-    df.sort_values(by = 'dateString').plot(x = 'dateString', y = 'sgv')
+    # Show plot
+    plt.tight_layout()
     plt.show()
+    print(df[['created_at', 'eventType', 'isValid', 'duration', 'durationInMilliseconds', 'type', 'rate', 'percent']])
+
 
 except Exception as e:
     print("❌ Error:", e)

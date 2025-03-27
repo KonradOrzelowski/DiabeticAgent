@@ -5,10 +5,6 @@ from dotenv import load_dotenv
 import pandas as pd
 from bson import json_util
 
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
-
 # Load environment variables from .env
 load_dotenv()
 
@@ -21,8 +17,8 @@ MONGO_PASS = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
 # MongoDB URI
 MONGO_URI = f"mongodb://{MONGO_USER}:{MONGO_PASS}@{MONGO_HOST}:{MONGO_PORT}/"
 
-def get_date(dataframe, date_column, year, month, day):
-    d = dataframe[date_column].copy()
+def get_date(dataframe, year, month, day):
+    d = dataframe['created_at'].copy()
 
     is_year = d.dt.year == year
     is_month = d.dt.month == month
@@ -41,24 +37,27 @@ try:
     # Get all collections in 'diabetic_records' database
     collections = db.list_collection_names()
 
-    collection = db['Entries']
+    unique_structures = {}
+
+    collection = db['Treatments']
 
     documents = collection.find({
-        'sgv': {'$exists': True},
-        'dateString': {'$regex': '^2023-12-31'}
+        '$or': [ 
+            { 'insulin': {'$exists': True} }, 
+            { 'carbs': {'$exists': True} }
+        ],
+        'created_at': {'$regex': '^2023-12-30'}
     })
+
     
     data = list(documents)
 
     df = pd.DataFrame(data)
 
-    df['dateString'] = pd.to_datetime(df['dateString'])
+    # df['created_at'] = pd.to_datetime(df['created_at'])
     
+    print(df[['created_at', 'eventType', 'carbs', 'insulin', 'isSMB', 'notes']])
 
-    # print()[['dateString', 'sgv']]
-
-    df.sort_values(by = 'dateString').plot(x = 'dateString', y = 'sgv')
-    plt.show()
 
 except Exception as e:
     print("❌ Error:", e)
