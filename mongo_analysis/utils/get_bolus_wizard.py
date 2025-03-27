@@ -9,6 +9,8 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
+from utils.get_sgv import get_sgv
+from utils.get_temp_basal import get_temp_basal
 # Load environment variables from .env
 load_dotenv()
 
@@ -21,30 +23,27 @@ MONGO_PASS = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
 # MongoDB URI
 MONGO_URI = f"mongodb://{MONGO_USER}:{MONGO_PASS}@{MONGO_HOST}:{MONGO_PORT}/"
 
-# 2023-12-31
-def get_sgv(date):
-    # Connect to MongoDB
+def get_bolus_wizard(date):
+
     client = MongoClient(MONGO_URI)
     db = client["diabetic_records"]
 
     # Get all collections in 'diabetic_records' database
     collections = db.list_collection_names()
 
-    collection = db['Entries']
+    collection = db['Treatments']
 
     documents = collection.find({
-        'sgv': {'$exists': True},
-        'dateString': {'$regex': f'^{date}'}
+        'eventType': 'Bolus Wizard',
+        'created_at': {'$regex': f'^{date}'}
     })
-    
     data = list(documents)
 
     df = pd.DataFrame(data)
 
-    df['created_at'] = pd.to_datetime(df['dateString'])
+    df['created_at'] = pd.to_datetime(df['created_at'])
 
-    
 
-    return df.sort_values(by = 'created_at')
+    df.sort_values(by = 'created_at')
 
-    
+    return df
