@@ -15,10 +15,12 @@ from utils.get_insulin_carbs import get_insulin_carbs
 # Load environment variables from .env
 load_dotenv()
 
+date = '2023-03-14'
+
 # Load dataframes
-insulin_carbs = get_insulin_carbs('2023-12-31')
-sugar_values = get_sgv('2023-12-31')
-temp_basal = get_temp_basal('2023-12-31')
+insulin_carbs = get_insulin_carbs(date)
+sugar_values = get_sgv(date)
+temp_basal = get_temp_basal(date)
 
 fig, (ax1, ax2) = plt.subplots(2)
 # fig.suptitle('Axes values are scaled individually by default')
