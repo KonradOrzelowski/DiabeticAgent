@@ -9,6 +9,8 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
+from utils.get_sgv import get_sgv
+from utils.get_temp_basal import get_temp_basal
 # Load environment variables from .env
 load_dotenv()
 
@@ -21,46 +23,32 @@ MONGO_PASS = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
 # MongoDB URI
 MONGO_URI = f"mongodb://{MONGO_USER}:{MONGO_PASS}@{MONGO_HOST}:{MONGO_PORT}/"
 
-def get_date(dataframe, date_column, year, month, day):
-    d = dataframe[date_column].copy()
-
-    is_year = d.dt.year == year
-    is_month = d.dt.month == month
-    is_day = d.dt.day == day
-
-    is_date = is_year & is_month & is_day
-
-    return dataframe[is_date]
+def get_insulin_carbs(date):
 
 
-try:
-    # Connect to MongoDB
+
     client = MongoClient(MONGO_URI)
     db = client["diabetic_records"]
 
     # Get all collections in 'diabetic_records' database
     collections = db.list_collection_names()
 
-    collection = db['Entries']
+    collection = db['Treatments']
 
     documents = collection.find({
-        'sgv': {'$exists': True},
-        'dateString': {'$regex': '^2023-12-31'}
+        '$or': [ 
+            { 'insulin': {'$exists': True} }, 
+            { 'carbs': {'$exists': True} }
+        ],
+        'created_at': {'$regex': f'^{date}'}
     })
-    
     data = list(documents)
 
     df = pd.DataFrame(data)
 
-    df['dateString'] = pd.to_datetime(df['dateString'])
-    
-
-    # print()[['dateString', 'sgv']]
-
-    df.sort_values(by = 'dateString').plot(x = 'dateString', y = 'sgv')
-    plt.show()
-
-except Exception as e:
-    print("❌ Error:", e)
+    df['created_at'] = pd.to_datetime(df['created_at'])
 
 
+    df.sort_values(by = 'created_at')
+
+    return df
