@@ -20,17 +20,6 @@ MONGO_PASS = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
 # MongoDB URI
 MONGO_URI = f"mongodb://{MONGO_USER}:{MONGO_PASS}@{MONGO_HOST}:{MONGO_PORT}/"
 
-def get_date(dataframe, year, month, day):
-    d = dataframe['created_at'].copy()
-
-    is_year = d.dt.year == year
-    is_month = d.dt.month == month
-    is_day = d.dt.day == day
-
-    is_date = is_year & is_month & is_day
-
-    return dataframe[is_date]
-
 
 try:
     # Connect to MongoDB
@@ -40,8 +29,6 @@ try:
     # Get all collections in 'diabetic_records' database
     collections = db.list_collection_names()
 
-    unique_structures = {}
-
     collection = db['Treatments']
 
     # Get all documents from the collection
@@ -49,33 +36,40 @@ try:
         'rate': {'$exists': True},
         'created_at': {'$regex': '^2023-12-31'}
     })
-    
-    
+
     data = list(documents)
 
     df = pd.DataFrame(data)
 
+    # Convert 'created_at' to datetime and sort
     df['created_at'] = pd.to_datetime(df['created_at'])
-    df.sort_values(by = 'created_at')
-    # Plot the basal insulin rate over time
-    plt.figure(figsize=(10, 6))
-    plt.plot(df['created_at'], df['rate'], marker='o', linestyle='-', color='b', label='Basal Rate')
+    df.sort_values(by='created_at', inplace=True)
 
-    # Labeling the plot
-    plt.title('Basal Insulin Rate Over Time')
-    plt.xlabel('Time')
+    plt.figure(figsize=(12, 6))
+
+    for index, row in df.iterrows():
+        start_time = row['created_at']
+        rate = row['rate']
+        duration = row['duration']
+        end_time = start_time + pd.to_timedelta(duration, unit='m') 
+
+        plt.fill_betweenx(
+            y=[0, rate], 
+            x1=start_time,  
+            x2=end_time,  
+            color='skyblue', 
+            edgecolor='blue'
+        )
+
+    plt.title('Event Durations Over Time (Rate vs Time)')
+    plt.xlabel('Start Time')
     plt.ylabel('Basal Rate (units/min)')
+    plt.grid(True, axis='x', linestyle='--', alpha=0.5)
     plt.xticks(rotation=45)
-    plt.grid(True)
-    plt.legend()
-
-    # Show plot
     plt.tight_layout()
+
     plt.show()
     print(df[['created_at', 'eventType', 'isValid', 'duration', 'durationInMilliseconds', 'type', 'rate', 'percent']])
 
-
 except Exception as e:
     print("❌ Error:", e)
-
-
