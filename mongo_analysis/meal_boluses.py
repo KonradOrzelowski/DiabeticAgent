@@ -43,8 +43,10 @@ try:
 
     # Get all documents from the collection
     documents = collection.find({
-        'eventType': 'Meal Bolus'
+        'eventType': 'Meal Bolus',
+        'created_at': {'$regex': '^2023-12-31'}
     })
+    
     
     data = list(documents)
 
@@ -52,8 +54,7 @@ try:
 
     df['created_at'] = pd.to_datetime(df['created_at'])
     
-    date = get_date(df, 2023, 12, 31)
-    print(date[['created_at', 'insulin', 'carbs']])
+    print(df[['created_at', 'insulin', 'carbs']])
 
 
 except Exception as e:

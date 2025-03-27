@@ -39,10 +39,10 @@ try:
 
     collection = db['Entries']
 
-    # Get all documents from the collection
-    documents = collection.find(
-        {'sgv': {'$exists': True}} 
-    )
+    documents = collection.find({
+        'sgv': {'$exists': True},
+        'dateString': {'$regex': '^2023-12-31'}
+    })
     
     data = list(documents)
 
@@ -50,9 +50,8 @@ try:
 
     df['dateString'] = pd.to_datetime(df['dateString'])
     
-    date = get_date(df, 'dateString', 2023, 12, 31)
 
-    print(date[['dateString', 'sgv']])
+    print(df[['dateString', 'sgv']])
 
 
 
