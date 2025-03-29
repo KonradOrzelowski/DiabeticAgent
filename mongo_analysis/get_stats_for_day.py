@@ -3,7 +3,7 @@ from utils.glucose_analysis import GlucoseAnalysis
 
 from utils.plot_glucose_data import plot_glucose_data
 
-date = '2023-12-31'
+date = '2023-03-26'
 
 # Load dataframes
 gr = getReadings()

@@ -5,12 +5,13 @@ from dotenv import load_dotenv
 import pandas as pd
 from bson import json_util
 
+from utils.get_readings import getReadings
+from utils.glucose_analysis import GlucoseAnalysis
+
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
-from utils.get_sgv import get_sgv
-from utils.get_temp_basal import get_temp_basal
 # Load environment variables from .env
 load_dotenv()
 
@@ -64,6 +65,27 @@ data = list(documents)
 
 df = pd.DataFrame(data)
 
-print(df)
+df['date'] = pd.to_datetime(df['_id'])
+
+df.sort_values(by='date', inplace=True)
 
 
+# Load dataframes
+gr = getReadings()
+
+lst = []
+
+from tqdm import tqdm
+
+for date in tqdm(df._id.to_list(), desc="Processing dates", unit="date"):
+    sugar_values = gr.get_sgv(date)
+
+    ga = GlucoseAnalysis(sugar_values)
+
+    lst.append({
+        **{'date': date},
+        **ga.calculate_summary()
+    })
+
+collection = db['Stats']
+collection.daily_stats.insert_many(lst)
