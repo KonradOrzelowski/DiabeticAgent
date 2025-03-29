@@ -5,6 +5,9 @@ import pandas as pd
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
+from dotenv import load_dotenv
+load_dotenv()
+
 class getReadings:
     def __init__(self, database = "diabetic_records"):
 
