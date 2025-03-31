@@ -1,6 +1,7 @@
 import os
 
 import pandas as pd
+from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
 from pymongo import MongoClient
@@ -51,20 +52,23 @@ class getReadings:
         df = pd.DataFrame(data)
 
         has_created_at = 'created_at' in df.columns
-        has_dateString = 'dateString' in df.columns
+        has_dateString = 'date' in df.columns
         
         # Convert 'created_at' to datetime and sort
         if has_created_at:
             df['created_at'] = pd.to_datetime(df['created_at'])
             
         elif not has_created_at and has_dateString:
-            df['created_at'] = pd.to_datetime(df['dateString'])
+            
+            df['created_at'] = pd.to_datetime(df["date"], unit="ms")
 
-        else:
-            raise ValueError('No time column!')
-        
+        # else:
+        #     raise ValueError('No time column!')
+
+        # df[sort_by] = df[sort_by].to_timestamp()
+
         df.sort_values(by=sort_by, inplace=True)
-        
+
         return df
 
 
@@ -117,3 +121,7 @@ class getReadings:
         }
 
         return self.get_data_from_collection(collection_name, query)
+
+    
+    def get_carbs_info(self, date, time_diff = 5):
+        pass
