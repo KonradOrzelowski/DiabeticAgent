@@ -60,7 +60,7 @@ class getReadings:
             
         elif not has_created_at and has_dateString:
             
-            df['created_at'] = pd.to_datetime(df["date"], unit="ms")
+            df['created_at'] = pd.to_datetime(df["date"], unit="ms").dt.tz_localize('UTC')
 
         # else:
         #     raise ValueError('No time column!')
