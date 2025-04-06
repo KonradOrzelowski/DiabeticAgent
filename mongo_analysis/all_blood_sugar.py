@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter1d
 from utils.get_readings import getReadings
 
+
 collection_name = 'Entries'
 gt = getReadings()
 query = {'sgv': {'$exists': True}}
@@ -14,6 +15,11 @@ df = gt.get_data_from_collection(collection_name, query)
 
 
 df['created_at'] = pd.to_datetime(df['created_at']) 
+
+cutoff_date = pd.to_datetime('09/01/2022', utc=True)
+
+df = df[df['created_at'] >= cutoff_date]
+
 df['hour'] = df['created_at'].dt.hour
 df['minute'] = df['created_at'].dt.minute
 df['time'] = df['hour'] * 60 + df['minute']
@@ -45,7 +51,7 @@ res_hour_minute = res_hour_minute.rolling(10).mean().reset_index()
 
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
 
-# Plot for res_hour_minute
+############################################# Plot for res_hour_minute ###########################################
 ax1.plot(res_hour_minute['hour_minute'], res_hour_minute['min'], label='min')
 ax1.plot(res_hour_minute['hour_minute'], res_hour_minute['mean'], label='mean')
 ax1.plot(res_hour_minute['hour_minute'], res_hour_minute['max'], label='max')
@@ -75,6 +81,22 @@ ax2.set_xlabel('Date')
 ax2.set_ylabel('SGV')
 ax2.legend()
 ax2.grid(True) 
+
+
+
+
+############################################# heatmap  #############################################
+import calplot
+df_cal = res_date_str[['date_str', 'mean']]
+values = df_cal.set_index('date_str')['mean']
+
+
+# Now we can use calplot to generate the calendar heatmap
+calplot.calplot(values, 
+                suptitle='Calendar Heatmap',
+                cmap = 'bwr', vmin=50, vmax=df_cal['mean'].max())
+
+
 
 plt.tight_layout()
 plt.show()
