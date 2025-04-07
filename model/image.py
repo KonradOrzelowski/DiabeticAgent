@@ -27,7 +27,7 @@ trimmer = trim_messages(
 messages = [
     
 ]
-trimmer.invoke(messages)
+
 
 while True:
     query = input("Human: ")
@@ -43,8 +43,9 @@ while True:
     ],
     )
     messages = messages + [message]
+    
     response = model.invoke(messages)
 
     print(response.content)
     messages = messages + [SystemMessage(content=response.content)]
-    print(len(messages))
+    trimmer.invoke(messages)
