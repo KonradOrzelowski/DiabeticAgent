@@ -16,7 +16,7 @@ from bson import json_util
 from mongo_analysis.utils.plot_glucose_data import plot_glucose_data
 
 # Load environment variables from .env
-load_dotenv()
+
 
 # Get MongoDB credentials from environment variables
 MONGO_HOST = os.getenv("HOST_NAME")
@@ -85,7 +85,7 @@ get_readings_for_date_tool = Tool(
 
 
 # Initialize the agent
-llm = ChatOpenAI(model_name="gpt-3.5-turbo", api_key=openai_api_key)
+llm = ChatOpenAI(model_name="gpt-4o-mini", api_key=openai_api_key)
 # model_name="gpt-3.5-turbo"
 # model_name="gpt-4.5-preview"
 
