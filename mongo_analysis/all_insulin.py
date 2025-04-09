@@ -94,6 +94,24 @@ ax1.grid(True)
 import calplot
 import matplotlib.pyplot as plt
 
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap, TwoSlopeNorm
+
+# Your custom blue-green-red colormap
+colors = ['deepskyblue', 'lawngreen', 'orangered']
+cmap = LinearSegmentedColormap.from_list('bgr_custom', colors, N=256)
+
+# Example data
+data = np.random.randn(10, 10) * 2  # Some values above/below zero
+
+# Define normalization so that green is at the median (e.g., 0)
+
+
+# Plot
+# plt.imshow(data, cmap=cmap, norm=norm)
+
+
 df_cal = df[['date_str', 'total_insulin']]
 values = df_cal.set_index('date_str')['total_insulin']
 
@@ -101,9 +119,10 @@ values = df_cal.set_index('date_str')['total_insulin']
 fig, axes = calplot.calplot(
     values, 
     suptitle='Calendar Heatmap',
-    cmap='bwr', 
-    vmin=0, 
-    vmax=df_cal['total_insulin'].max()
+    cmap=cmap, 
+    vmin=df_cal.total_insulin.quantile(0.1),
+    # vcenter=df_cal.total_insulin.mean(),
+    vmax=df_cal.total_insulin.quantile(0.9)
 )
 
 plt.tight_layout()
