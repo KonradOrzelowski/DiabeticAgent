@@ -1,4 +1,5 @@
 .env
+.venv
 /mongo_analysis/.venv
 *.pyc
 mongo_analysis/data.json
