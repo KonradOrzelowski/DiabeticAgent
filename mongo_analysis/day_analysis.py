@@ -107,19 +107,19 @@ def get_fasting_impact(df_carbs_, df_sgv_, date, hours=5):
     
 # print()
 
-lst = []
-for day in list(set(df_sgv['date_str'])):
-    stats = get_fasting_impact(df_carbs, df_sgv, date = day, hours = 5)
-    lst.append(stats)
-df = pd.DataFrame(lst, columns = ['date_str', 'fasting_mean', 'fasting_min', 'fasting_max', 'carbs_mean', 'carbs_min', 'carbs_max'])
-df['date'] = pd.to_datetime(df['date_str'], format='%d %m %Y')
+# lst = []
+# for day in list(set(df_sgv['date_str'])):
+#     stats = get_fasting_impact(df_carbs, df_sgv, date = day, hours = 5)
+#     lst.append(stats)
+# df = pd.DataFrame(lst, columns = ['date_str', 'fasting_mean', 'fasting_min', 'fasting_max', 'carbs_mean', 'carbs_min', 'carbs_max'])
+# df['date'] = pd.to_datetime(df['date_str'], format='%d %m %Y')
 
-import calplot
-import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
+# import calplot
+# import matplotlib.pyplot as plt
+# from matplotlib.colors import LinearSegmentedColormap
 
-colors = ['deepskyblue', 'lawngreen', 'orangered']
-cmap = LinearSegmentedColormap.from_list('bgr_custom', colors, N=256)
+# colors = ['deepskyblue', 'lawngreen', 'orangered']
+# cmap = LinearSegmentedColormap.from_list('bgr_custom', colors, N=256)
 
 def plot_calendar_heatmap(df, column_name, title):
     if not isinstance(df.index, pd.DatetimeIndex):
@@ -154,10 +154,68 @@ def plot_calendar_heatmap(df, column_name, title):
 
     
 
-# Plot for total insulin
-plot_calendar_heatmap(df, 'fasting_mean', 'fasting_mean')
+# # Plot for total insulin
+# plot_calendar_heatmap(df, 'fasting_mean', 'fasting_mean')
 
-# Plot for carbs
-plot_calendar_heatmap(df, 'carbs_mean', 'carbs_mean')
+# # Plot for carbs
+# plot_calendar_heatmap(df, 'carbs_mean', 'carbs_mean')
 
-plt.show()
+# plt.show()
+date = '20 01 2024'
+df_carbs = df_carbs[df_carbs.date_str == date].copy()
+df_sgv = df_sgv[df_sgv.date_str == date].copy()
+df_sgv['group'] = -1
+
+prev_is_raised = True
+prev_is_low = True
+prev_in_range = True
+
+group_counter = 0
+group_counter_low = 0
+group_couter_range = 0
+
+for idx, row in df_sgv.iterrows():
+    # sugar is high
+    is_raised = row.sgv > 140
+    is_low = row.sgv < 80
+    is_range = bool(row.sgv > 80 and row.sgv < 140)
+    
+    # add to group
+    if is_raised:
+        df_sgv.loc[idx, 'group'] = f'high_{group_counter}'
+    if bool(prev_is_raised & ~is_raised):
+        group_counter = group_counter + 1
+
+    if is_low:
+        df_sgv.loc[idx, 'group'] = f'low_{group_counter}'
+    if bool(prev_is_low & ~is_low):
+        group_counter_low = group_counter_low + 1
+
+    if is_range:
+        df_sgv.loc[idx, 'group'] = f'range_{group_counter}'
+    if bool(prev_in_range & ~is_range):
+        group_couter_range = group_couter_range + 1
+    prev_is_raised = is_raised
+    prev_is_low = is_low
+    prev_in_range = is_range
+
+
+print(df_sgv)
+
+df_sgv = df_sgv[df_sgv.group != -1]
+
+print(df_sgv)
+
+rised_sugar = df_sgv.groupby(by=["group"], dropna=False)['sgv'].agg(['min', 'mean', 'max'])
+rised_sugar_time = df_sgv.groupby(by=["group"], dropna=False)['created_at'].agg(['min', 'max']).assign(diff=lambda x: x['max'] - x['min'])
+
+
+
+
+rised_sugar = rised_sugar.add_prefix('sugar_')
+rised_sugar_time = rised_sugar_time.add_prefix('sugar_time_')
+
+
+df = rised_sugar_time.join(rised_sugar, how='inner')
+print(df.sort_values(by = 'sugar_time_min'))
+
