@@ -3,6 +3,7 @@ load_dotenv()
 
 from langchain_core.messages import HumanMessage, SystemMessage, trim_messages
 from langchain_openai import ChatOpenAI
+from langchain.chains import ConversationalRetrievalChain
 
 
 model = ChatOpenAI(model_name="gpt-4o-mini")
@@ -33,13 +34,6 @@ trimmer = trim_messages(
 messages = [
     
 ]
-# from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-# from langchain_core.messages import HumanMessage
-
-# prompt_template = ChatPromptTemplate([
-#     ("system", "You are a helpful assistant diabetes"),
-#     MessagesPlaceholder("msgs")
-# ])
 
 while True:
     query = input("Human: ")
