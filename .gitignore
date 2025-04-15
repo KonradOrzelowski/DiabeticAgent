@@ -8,4 +8,4 @@ your_project.egg-info/PKG-INFO
 your_project.egg-info/SOURCES.txt
 your_project.egg-info/top_level.txt
 *.png
-model/checking_blood_glucose.pdf
+*.pdf
