@@ -39,6 +39,8 @@ exclude_phrases = [
     ,'Diabetes Care Volume 48, Supplement 1, January 2025'
     ,'Duality of interest information for each author is available at'
 ]
+import warnings
+warnings.filterwarnings("ignore", message="CropBox missing from /Page, defaulting to MediaBox")
 
 def clean_text(text):
     # Normalize spaces

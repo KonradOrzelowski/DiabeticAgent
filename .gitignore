@@ -12,3 +12,6 @@ your_project.egg-info/SOURCES.txt
 your_project.egg-info/top_level.txt
 *.png
 *.pdf
+*.csv
+
+backend/output/*
