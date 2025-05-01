@@ -35,13 +35,7 @@ def openai_token_count(string: str) -> int:
     num_tokens = len(encoding.encode(string, disallowed_special=()))
     return num_tokens
 
-# cluster_chunker = ClusterSemanticChunker(
-#     embedding_function=embedding_function, 
-#     max_chunk_size=400, 
-#     length_function=openai_token_count
-# )
 
-# cluster_chunker_chunks = cluster_chunker.split_text(text[0:2400])
 
 import os
 import pickle
@@ -67,3 +61,19 @@ dct = {f'chunk_{idx}': chunk for idx, chunk in enumerate(llm_chunker_chunks)}
 
 with open('output/standards-of-care-2025-chunks.json', 'w') as f:
     json.dump(dct, f, indent=4)
+
+openai_api_key = os.getenv("OPENAI_API_KEY")
+def split_text_into_chunks(text):
+
+    embedding_function = embedding_functions.OpenAIEmbeddingFunction(api_key=openai_api_key, model_name="text-embedding-3-large")
+
+    llm_chunker = LLMSemanticChunker(
+        organisation="openai", 
+        model_name="gpt-4.1-mini", 
+        api_key=openai_api_key
+    )
+
+    llm_chunker_chunks = llm_chunker.split_text(text)
+    dct = {f'chunk_{idx}': chunk for idx, chunk in enumerate(llm_chunker_chunks)}
+    return dct
+
