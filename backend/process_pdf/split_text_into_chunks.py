@@ -1,10 +1,8 @@
-# Main Chunking Functions
 from chunking_evaluation.chunking import (
     LLMSemanticChunker
 )
-
-# Additional Dependencies
 from chromadb.utils import embedding_functions
+
 import os
 
 openai_api_key = os.getenv("OPENAI_API_KEY")
