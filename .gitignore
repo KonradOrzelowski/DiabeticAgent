@@ -15,3 +15,5 @@ your_project.egg-info/top_level.txt
 *.csv
 
 backend/output/*
+backend/faiss_index/index.faiss
+backend/faiss_index/index.pkl
