@@ -6,7 +6,7 @@ from tqdm import tqdm
 import os
 
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DOCUMENTS_DIR = os.path.join(BASE_DIR, "documents")
 OUTPUT_DIR = os.path.join(BASE_DIR, "output")
@@ -51,10 +51,7 @@ def extract_pdf_to_text(file_name):
         except Exception as e:
             print(f'Error inside page {page_num + 1}: {e}')
 
-    with open(pkl_output_path, 'wb') as f:
-        pickle.dump(all_documents, f)
-
-    with open(txt_output_path, 'w', encoding='utf-8') as f:
-        f.write("\n\n".join(all_documents))
     
     os.remove(TEMP_PDF_PATH)
+
+    return all_documents
