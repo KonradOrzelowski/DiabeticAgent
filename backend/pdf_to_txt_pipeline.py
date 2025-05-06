@@ -37,7 +37,7 @@ def standards_of_care_2025():
 
 from process_pdf_ import ProcessPDF
 
-file_name = 'dr_bernstein_diabetes_solution'
+file_name = 'standards_of_care_2025'
 pp = ProcessPDF(file_name)
 
 # pp.extract_pdf_to_text()
@@ -58,3 +58,7 @@ pp = ProcessPDF(file_name)
 # pp.load_format_chunks()
 # pp.chunks_to_vectorstore()
 # pp.save_vectorestore()
+
+# pp.load_vectorestore()
+
+# print(pp.vectorstore)

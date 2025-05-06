@@ -64,6 +64,7 @@ class ProcessPDF:
         self.vec_output_path = os.path.join(self.file_output_dir, f"{self.file_name}_vectorstore")
 
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        self.embeddings = OpenAIEmbeddings()
 
         self.all_pages = None
         self.all_pages_txt = None
@@ -255,7 +256,7 @@ class ProcessPDF:
 
 
 
-    def _summarize_text(self, text, model):
+    def __summarize_text(self, text, model):
         """
         Uses an OpenAI model to format and improve a chunk of text.
 
@@ -296,7 +297,7 @@ class ProcessPDF:
 
         for key, value in tqdm(self.raw_chunks.items()):
             try:
-                formatted_chunks[key] = self._summarize_text(value, model).content
+                formatted_chunks[key] = self.__summarize_text(value, model).content
             except Exception as e:
                 print(f"[ERROR] Failed to process chunk {key}: {e}")
                 
@@ -324,12 +325,18 @@ class ProcessPDF:
             )
             docs.append(doc)
 
-        embeddings = OpenAIEmbeddings()
-        self.vectorstore = FAISS.from_documents(docs, embeddings)
+        self.vectorstore = FAISS.from_documents(docs, self.embeddings)
 
 
     def save_vectorestore(self):    
         self.vectorstore.save_local(self.vec_output_path)
+
+
+    def load_vectorestore(self):
+        self.vectorstore = FAISS.load_local(
+            self.vec_output_path, self.embeddings, allow_dangerous_deserialization=True
+        )
+
         
 
 
@@ -353,5 +360,8 @@ def main():
     pp.format_chunks()
     pp.save_format_chunks()
 
+    pp.load_format_chunks()
     pp.chunks_to_vectorstore()
     pp.save_vectorestore()
+
+    pp.load_vectorestore()
