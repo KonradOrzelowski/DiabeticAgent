@@ -50,7 +50,7 @@ class getReadings:
         
         # Convert to DataFrame
         df = pd.DataFrame(data)
-
+        print(df.head())
         has_created_at = 'created_at' in df.columns
         has_dateString = 'date' in df.columns
         
@@ -58,10 +58,9 @@ class getReadings:
         if has_created_at:
             df['created_at'] = pd.to_datetime(df['created_at'])
             
-        elif not has_created_at and has_dateString:
-            
+        else:
             df['created_at'] = pd.to_datetime(df["date"], unit="ms").dt.tz_localize('UTC')
-
+        
         # else:
         #     raise ValueError('No time column!')
 
