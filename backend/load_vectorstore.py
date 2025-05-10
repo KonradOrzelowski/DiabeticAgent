@@ -34,7 +34,7 @@ def get_prompt_question(question, extended=False):
         doc_content[f'doc_{idx}'] = doc.page_content
     
 
-    messages = HumanMessage(f"""
+    message = HumanMessage(f"""
     Helpful documents:
     -------------------
     
@@ -47,9 +47,9 @@ def get_prompt_question(question, extended=False):
     """)
 
     if extended:
-        return messages, doc_content, question
+        return message, doc_content, question
     else:
-        return messages
+        return message
 
 
 
@@ -57,31 +57,13 @@ import json
 language = "English"
 
 trimmer = trim_messages(
-    max_tokens=65,
+    max_tokens=4,
     strategy="last",
     token_counter=model,
     include_system=True,
     allow_partial=False,
     start_on="human",
 )
-messages_lst = [
-    
-]
-
-
-# while True:
-#     query = input("Human: ")
-#     messages = get_prompt_question(query)
-#     lst = [SystemMessage(content = messages[0]['content']), HumanMessage(content = messages[1]['content'])]
-
-#     messages_lst = messages_lst + lst
-    
-#     response = model.invoke(messages_lst)
-
-#     print(response.content)
-#     messages_lst = messages_lst + [AIMessage(content=response.content)]
-#     trimmer.invoke(messages_lst)
-
 
 query =   """
     Help me to analyiste my night sugar from this period:
@@ -105,7 +87,7 @@ query =   """
     
     """
 
-messages, doc_content, question = get_prompt_question(query, True)
+
 
 assistant_instruction_str = (
                 "You are a diabetic assistant. "
@@ -118,7 +100,19 @@ assistant_instruction_str = (
 
 assistant_instruction = SystemMessage(content=assistant_instruction_str)
 assistant_instruction.pretty_print()
-messages.pretty_print()
+
+messages_lst = [assistant_instruction]
+while True:
+    query = input(f"Len: {len(messages_lst)} Human: ")
+    message, doc_content, question = get_prompt_question(query, True)
+    messages_lst = messages_lst + [message]
+    
+    response = model.invoke(messages_lst)
+    model_response = AIMessage(response.content)
+    model_response.pretty_print()
+
+    messages_lst = messages_lst + [model_response]
+    trimmer.invoke(messages_lst)
 
 # from langchain.load.dump import dumps
 
