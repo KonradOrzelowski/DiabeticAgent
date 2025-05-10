@@ -57,12 +57,11 @@ import json
 language = "English"
 
 trimmer = trim_messages(
-    max_tokens=4,
+    max_tokens=65,
     strategy="last",
     token_counter=model,
     include_system=True,
-    allow_partial=False,
-    start_on="human",
+    allow_partial=False
 )
 
 query =   """
