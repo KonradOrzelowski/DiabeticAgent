@@ -10,8 +10,8 @@ from tqdm import tqdm
 
 from langchain.schema import Document
 from langchain_openai import ChatOpenAI
-from langchain.vectorstores import FAISS
-from langchain.embeddings import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import OpenAIEmbeddings
 
 from chunking_evaluation.chunking import (
     LLMSemanticChunker,

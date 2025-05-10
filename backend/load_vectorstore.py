@@ -1,9 +1,14 @@
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 
-from langchain_core.messages import HumanMessage, SystemMessage, trim_messages
+from langchain_core.messages import (
+    AIMessage,
+    HumanMessage,
+    BaseMessage,
+    SystemMessage,
+    trim_messages,
+)
 from langchain_openai import ChatOpenAI
-from langchain.chains import ConversationalRetrievalChain
 
 from process_pdf import ProcessPDF
 
@@ -19,45 +24,36 @@ faiss_index.merge_from(faiss_index_1)
 
 model = ChatOpenAI(model_name="gpt-4o-mini")
 
-def get_promt_question(question):
+def get_prompt_question(question, extended=False):
 
     docs = faiss_index.similarity_search(question)
     doc_content = {}
+    new_line = '\n'
 
     for idx, doc in enumerate(docs):
         doc_content[f'doc_{idx}'] = doc.page_content
-        # print(f"{f'Doc {idx}':-^50}")
-        # lines = doc.page_content.split('\n')
+    
 
-        # # Print each non-empty line
-        # for line in lines:
-        #     if line.strip():
-        #         print(line)
+    messages = HumanMessage(f"""
+    Helpful documents:
+    -------------------
+    
+    {''.join([f"{key}: {repr(value)}{new_line}" for key, value in doc_content.items()])}
 
-    messages = [
-        {
-            "role": "system",
-            "content": (
-                "You are a diabetic assistant. "
-                "Your role is to assist users in better managing type 1 diabetes. "
-                "You should use all available knowledge, including both the provided documents "
-                "and the broader knowledge you have from your training. "
-                "Make sure to reference the documents where relevant, "
-                "but do not limit your responses to them if additional context or insights from your training would be helpful."
-            )
-        },
-        {
-            "role": "user",
-            "content": f"Helpful documents:\n\n{doc_content}\n\nPlease respond to the following question:\n\n{question}"
-        }
-    ]
+    Please respond to the following question:
+    -----------------------------------------
 
-    return messages
+    {question}
+    """)
 
-# messages = get_promt_question(question)
-# lst = [SystemMessage(content = messages[0]['content']), HumanMessage(content = messages[1]['content'])]
-# print()
+    if extended:
+        return messages, doc_content, question
+    else:
+        return messages
 
+
+
+import json
 language = "English"
 
 trimmer = trim_messages(
@@ -73,15 +69,78 @@ messages_lst = [
 ]
 
 
-while True:
-    query = input("Human: ")
-    messages = get_promt_question(query)
-    lst = [SystemMessage(content = messages[0]['content']), HumanMessage(content = messages[1]['content'])]
+# while True:
+#     query = input("Human: ")
+#     messages = get_prompt_question(query)
+#     lst = [SystemMessage(content = messages[0]['content']), HumanMessage(content = messages[1]['content'])]
 
-    messages_lst = messages_lst + lst
+#     messages_lst = messages_lst + lst
     
-    response = model.invoke(messages_lst)
+#     response = model.invoke(messages_lst)
 
-    print(response.content)
-    messages_lst = messages_lst + [SystemMessage(content=response.content)]
-    trimmer.invoke(messages_lst)
+#     print(response.content)
+#     messages_lst = messages_lst + [AIMessage(content=response.content)]
+#     trimmer.invoke(messages_lst)
+
+
+query =   """
+    Help me to analyiste my night sugar from this period:
+    | date       |   min |   max |   mean |   25th_per |   50th_per |   75th_per |
+    |:-----------|------:|------:|-------:|-----------:|-----------:|-----------:|
+    | 2024-09-24 |    49 |   118 |  91.13 |      83.75 |       89.5 |     100    |
+    | 2024-09-25 |    92 |   132 | 113.83 |     108    |      113.5 |     119.5  |
+    | 2024-09-26 |    54 |   127 |  85.06 |      70    |       81   |     100    |
+    | 2024-09-27 |    39 |   124 |  95.14 |      83    |       99   |     112    |
+    | 2024-09-28 |    39 |   138 |  98.92 |      85    |       99   |     116    |
+    | 2024-09-29 |    63 |   136 | 108.32 |      99.25 |      112   |     124.25 |
+    | 2024-09-30 |    55 |   172 | 112.62 |     103    |      112   |     127    |
+    | 2024-10-01 |    39 |   191 | 113.06 |      64.75 |      118.5 |     160.75 |
+    | 2024-10-02 |    91 |   143 | 114.65 |     106    |      118.5 |     125    |
+    | 2024-10-03 |    97 |   146 | 115.3  |     101.75 |      114.5 |     123.5  |
+    | 2024-10-04 |    93 |   168 | 115.1  |     103    |      109.5 |     122.25 |
+    | 2024-10-05 |   101 |   146 | 120.98 |     113    |      120   |     129    |
+    | 2024-10-06 |    46 |   154 |  98.05 |      68.5  |       80   |     138    |
+    | 2024-10-07 |    82 |   143 | 113.69 |      98.75 |      115   |     126.5  |
+    | 2024-10-08 |    39 |   108 |  81.69 |      71.5  |       79   |      93.5  |
+    
+    """
+
+messages, doc_content, question = get_prompt_question(query, True)
+
+assistant_instruction_str = (
+                "You are a diabetic assistant. "
+                "Your role is to assist users in better managing type 1 diabetes. "
+                "You should use all available knowledge, including both the provided documents "
+                "and the broader knowledge you have from your training. "
+                "Make sure to reference the documents where relevant, "
+                "but do not limit your responses to them if additional context or insights from your training would be helpful."
+            )
+
+assistant_instruction = SystemMessage(content=assistant_instruction_str)
+assistant_instruction.pretty_print()
+messages.pretty_print()
+
+
+# from langchain.load.dump import dumps
+
+# messages_string = dumps(messages.content, ensure_ascii=False, pretty = True)
+# doc_content = dumps(doc_content, ensure_ascii=False, pretty = True)
+# question = dumps(question, ensure_ascii=False, pretty = True)
+
+# with open('json_exports/messages_string.json', 'w', encoding='utf-8') as f:
+#     f.write(messages_string)
+
+
+# with open('json_exports/doc_content.json', 'w', encoding='utf-8') as f:
+#     f.write(doc_content)
+
+
+# with open('json_exports/question.json', 'w', encoding='utf-8') as f:
+#     f.write(question)
+
+
+# # response = model.invoke(messages)
+# # response_string = dumps(response, ensure_ascii=False, pretty = True)
+
+# # with open('response_string.json', 'w', encoding='utf-8') as f:
+# #     f.write(response_string)

@@ -50,7 +50,7 @@ class getReadings:
         
         # Convert to DataFrame
         df = pd.DataFrame(data)
-        print(df.head())
+        # print(df.head())
         has_created_at = 'created_at' in df.columns
         has_dateString = 'date' in df.columns
         

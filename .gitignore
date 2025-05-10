@@ -17,3 +17,6 @@ your_project.egg-info/top_level.txt
 backend/output/*
 backend/faiss_index/index.faiss
 backend/faiss_index/index.pkl
+backend/json_exports/doc_content.json
+backend/json_exports/messages_string.json
+backend/json_exports/question.json

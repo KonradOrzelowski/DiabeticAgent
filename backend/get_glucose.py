@@ -45,7 +45,7 @@ def get_night_stats(end_day: str, time_range_days: int, last_night_hour: int) ->
         }
     }
     df = gt.get_data_from_collection(DEFAULT_COLLECTION_NAME, query)
-    print(df)
+    # print(df)
     if df.empty:
         return pd.DataFrame()
 
