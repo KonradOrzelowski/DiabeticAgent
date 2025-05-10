@@ -38,7 +38,7 @@ def get_prompt_question(question, extended=False):
     Helpful documents:
     -------------------
     
-    {''.join([f"{key}: {repr(value)}{new_line}" for key, value in doc_content.items()])}
+    {''.join([f"{key}: {value}{new_line}" for key, value in doc_content.items()])}
 
     Please respond to the following question:
     -----------------------------------------
@@ -120,7 +120,6 @@ assistant_instruction = SystemMessage(content=assistant_instruction_str)
 assistant_instruction.pretty_print()
 messages.pretty_print()
 
-
 # from langchain.load.dump import dumps
 
 # messages_string = dumps(messages.content, ensure_ascii=False, pretty = True)
@@ -128,7 +127,7 @@ messages.pretty_print()
 # question = dumps(question, ensure_ascii=False, pretty = True)
 
 # with open('json_exports/messages_string.json', 'w', encoding='utf-8') as f:
-#     f.write(messages_string)
+#     f.write(messages.pretty_repr())
 
 
 # with open('json_exports/doc_content.json', 'w', encoding='utf-8') as f:
