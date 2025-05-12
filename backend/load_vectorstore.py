@@ -24,32 +24,34 @@ faiss_index.merge_from(faiss_index_1)
 
 model = ChatOpenAI(model_name="gpt-4o-mini")
 
-def get_prompt_question(question, extended=False):
+# def get_prompt_question(question, extended=False):
 
-    docs = faiss_index.similarity_search(question)
-    doc_content = {}
-    new_line = '\n'
+#     docs = faiss_index.similarity_search(question)
+#     doc_content = {}
+#     new_line = '\n'
 
-    for idx, doc in enumerate(docs):
-        doc_content[f'doc_{idx}'] = doc.page_content
+#     for idx, doc in enumerate(docs):
+#         doc_content[f'doc_{idx}'] = doc.page_content
+
+#     docs_str = {''.join([f"{key}: {value}{new_line}" for key, value in doc_content.items()])}
     
 
-    message = HumanMessage(f"""
-    Helpful documents:
-    -------------------
+#     message = HumanMessage(f"""
+#     Helpful documents:
+#     -------------------
+#     {docs_str}
     
-    {''.join([f"{key}: {value}{new_line}" for key, value in doc_content.items()])}
 
-    Please respond to the following question:
-    -----------------------------------------
+#     Please respond to the following question:
+#     -----------------------------------------
 
-    {question}
-    """)
+#     {question}
+#     """)
 
-    if extended:
-        return message, doc_content, question
-    else:
-        return message
+#     if extended:
+#         return message, doc_content, question
+#     else:
+#         return message
 
 
 
@@ -57,61 +59,113 @@ import json
 language = "English"
 
 trimmer = trim_messages(
-    max_tokens=65,
+    max_tokens=4,
     strategy="last",
     token_counter=model,
     include_system=True,
     allow_partial=False
 )
 
-query =   """
-    Help me to analyiste my night sugar from this period:
-    | date       |   min |   max |   mean |   25th_per |   50th_per |   75th_per |
-    |:-----------|------:|------:|-------:|-----------:|-----------:|-----------:|
-    | 2024-09-24 |    49 |   118 |  91.13 |      83.75 |       89.5 |     100    |
-    | 2024-09-25 |    92 |   132 | 113.83 |     108    |      113.5 |     119.5  |
-    | 2024-09-26 |    54 |   127 |  85.06 |      70    |       81   |     100    |
-    | 2024-09-27 |    39 |   124 |  95.14 |      83    |       99   |     112    |
-    | 2024-09-28 |    39 |   138 |  98.92 |      85    |       99   |     116    |
-    | 2024-09-29 |    63 |   136 | 108.32 |      99.25 |      112   |     124.25 |
-    | 2024-09-30 |    55 |   172 | 112.62 |     103    |      112   |     127    |
-    | 2024-10-01 |    39 |   191 | 113.06 |      64.75 |      118.5 |     160.75 |
-    | 2024-10-02 |    91 |   143 | 114.65 |     106    |      118.5 |     125    |
-    | 2024-10-03 |    97 |   146 | 115.3  |     101.75 |      114.5 |     123.5  |
-    | 2024-10-04 |    93 |   168 | 115.1  |     103    |      109.5 |     122.25 |
-    | 2024-10-05 |   101 |   146 | 120.98 |     113    |      120   |     129    |
-    | 2024-10-06 |    46 |   154 |  98.05 |      68.5  |       80   |     138    |
-    | 2024-10-07 |    82 |   143 | 113.69 |      98.75 |      115   |     126.5  |
-    | 2024-10-08 |    39 |   108 |  81.69 |      71.5  |       79   |      93.5  |
-    
+
+
+
+from langchain.agents import initialize_agent, Tool
+from langchain_core.tools import tool
+
+@tool("Diabetes Document Search", parse_docstring=True)
+def get_relevent_docs(question: str) -> str:
     """
+    Retrieve and format relevant documents from a FAISS index based on a given question.
 
+    Args:
+        question (str): The input question used to perform a similarity search in the FAISS index.
 
+    Returns:
+        str: A formatted string containing the contents of the most relevant documents, each labeled by index.
+    """
+    docs = faiss_index.similarity_search(question)
+    doc_content = {}
+    new_line = '\n'
+
+    for idx, doc in enumerate(docs):
+        doc_content[f'doc_{idx}'] = doc.page_content
+
+    docs_str = ''.join([f"{key}: {value}{new_line}" for key, value in doc_content.items()])
+    return docs_str
+from langchain.agents import AgentExecutor, create_react_agent
+
+tools = [get_relevent_docs]
 
 assistant_instruction_str = (
                 "You are a diabetic assistant. "
                 "Your role is to assist users in better managing type 1 diabetes. "
-                "You should use all available knowledge, including both the provided documents "
-                "and the broader knowledge you have from your training. "
+                "Answer the following questions as best you can. You have access to the following tools:"
+                f"{tools}"
                 "Make sure to reference the documents where relevant, "
                 "but do not limit your responses to them if additional context or insights from your training would be helpful."
-            )
+)
 
 assistant_instruction = SystemMessage(content=assistant_instruction_str)
 assistant_instruction.pretty_print()
 
-messages_lst = [assistant_instruction]
-while True:
-    query = input(f"Len: {len(messages_lst)} Human: ")
-    message, doc_content, question = get_prompt_question(query, True)
-    messages_lst = messages_lst + [message]
-    
-    response = model.invoke(messages_lst)
-    model_response = AIMessage(response.content)
-    model_response.pretty_print()
 
-    messages_lst = messages_lst + [model_response]
-    trimmer.invoke(messages_lst)
+from langchain.agents.react.agent import create_react_agent
+from langchain.agents import AgentExecutor
+
+from langchain.prompts import PromptTemplate
+
+tool_names = [tool.name for tool in tools]
+prompt_template = PromptTemplate(
+    input_variables=["tools", "tool_names", "input", "agent_scratchpad"],
+    template="""
+You are a diabetic assistant. 
+Your role is to assist users in managing type 1 diabetes.
+
+You can use the following tools:
+{tools}
+
+When answering, follow this format exactly:
+Thought: You could think about what to do
+Action: You may take one of this actions if you think so [{tool_names}]
+Action Input: The input to the action
+
+Then, after observing the result of the action, continue the thought process and provide a final answer if ready.
+
+Begin!
+
+Question: {input}
+
+{agent_scratchpad}
+"""
+)
+
+
+
+
+agent = create_react_agent(llm=model, tools=tools, prompt=prompt_template)
+agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, return_intermediate_steps=True, handle_parsing_errors=True)
+
+
+def run_assistant():
+    messages_lst = [assistant_instruction]
+    while True:
+        query = input(f"Len: {len(messages_lst)} Human: ")
+
+        # message, doc_content, question = get_prompt_question(query, True)
+        messages_lst.append(query)
+
+        
+        response = agent_executor.invoke({'input': query})
+
+        print(response)
+
+        model_response = AIMessage(response['output'])
+        model_response.pretty_print()
+
+        messages_lst.append(model_response)
+        messages_lst = trimmer.invoke(messages_lst)
+
+run_assistant()
 
 # from langchain.load.dump import dumps
 
