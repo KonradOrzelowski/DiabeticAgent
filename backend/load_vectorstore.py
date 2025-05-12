@@ -73,7 +73,7 @@ from langchain.agents import initialize_agent, Tool
 from langchain_core.tools import tool
 
 @tool("Diabetes Document Search", parse_docstring=True)
-def get_relevent_docs(question: str) -> str:
+def get_relevent_docs(question: str, extended: bool = False) -> str:
     """
     Retrieve and format relevant documents from a FAISS index based on a given question.
 
@@ -91,7 +91,12 @@ def get_relevent_docs(question: str) -> str:
         doc_content[f'doc_{idx}'] = doc.page_content
 
     docs_str = ''.join([f"{key}: {value}{new_line}" for key, value in doc_content.items()])
-    return docs_str
+
+    if extended:
+        return docs
+    else:
+        return docs_str
+
 from langchain.agents import AgentExecutor, create_react_agent
 
 tools = [get_relevent_docs]
@@ -127,7 +132,7 @@ You can use the following tools:
 When answering, follow this format exactly:
 Thought: You could think about what to do
 Action: You may take one of this actions if you think so [{tool_names}]
-Action Input: The input to the action
+Action Input: Firstly, decide if you need to use a tool
 
 Then, after observing the result of the action, continue the thought process and provide a final answer if ready.
 
@@ -166,6 +171,9 @@ def run_assistant():
         messages_lst = trimmer.invoke(messages_lst)
 
 run_assistant()
+# result = get_relevent_docs({"question": "I like fish and chips", "extended": True})
+
+# print(result)
 
 # from langchain.load.dump import dumps
 
