@@ -1,15 +1,5 @@
-from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
-
-from langchain_core.messages import (
-    AIMessage,
-    HumanMessage,
-    BaseMessage,
-    SystemMessage,
-    trim_messages,
-)
 from langchain_openai import ChatOpenAI
-
 from process_pdf import ProcessPDF
 
 def load_faiss_index(file_name):
@@ -22,18 +12,7 @@ faiss_index_1 = load_faiss_index('standards_of_care_2025')
 
 faiss_index.merge_from(faiss_index_1)
 
-model = ChatOpenAI(model_name="gpt-4o-mini")
 
-import json
-language = "English"
-
-trimmer = trim_messages(
-    max_tokens=4,
-    strategy="last",
-    token_counter=model,
-    include_system=True,
-    allow_partial=False
-)
 
 from langchain.agents import initialize_agent, Tool
 from langchain_core.tools import tool
@@ -66,18 +45,6 @@ def get_relevent_docs(question: str, extended: bool = False) -> str:
 from langchain.agents import AgentExecutor, create_react_agent
 
 tools = [get_relevent_docs]
-
-assistant_instruction_str = (
-                "You are a diabetic assistant. "
-                "Your role is to assist users in better managing type 1 diabetes. "
-                "Answer the following questions as best you can. You have access to the following tools:"
-                f"{tools}"
-                "Make sure to reference the documents where relevant, "
-                "but do not limit your responses to them if additional context or insights from your training would be helpful."
-)
-
-assistant_instruction = SystemMessage(content=assistant_instruction_str)
-assistant_instruction.pretty_print()
 
 
 from langchain.agents.react.agent import create_react_agent
@@ -112,6 +79,7 @@ Question: {input}
 
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.chat_history import InMemoryChatMessageHistory
+model = ChatOpenAI(model_name="gpt-4o-mini")
 memory = InMemoryChatMessageHistory(session_id="test-session")
 agent = create_react_agent(llm=model, tools=tools, prompt=prompt_template)
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, return_intermediate_steps=True, handle_parsing_errors=True)
@@ -126,9 +94,9 @@ agent_with_chat_history = RunnableWithMessageHistory(
 config = {"configurable": {"session_id": "test-session"}}
 
 def run_assistant():
-    messages_lst = [assistant_instruction]
+
     while True:
-        query = input(f"Len: {len(messages_lst)} Human: ")
+        query = input(f"Human: ")
        
         response = agent_with_chat_history.invoke({'input': query}, config)
 
