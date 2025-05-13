@@ -42,63 +42,24 @@ def get_relevent_docs(question: str, extended: bool = False) -> str:
     else:
         return docs_str
 
-from langchain.agents import AgentExecutor, create_react_agent
-
 tools = [get_relevent_docs]
 
 
-from langchain.agents.react.agent import create_react_agent
-from langchain.agents import AgentExecutor
-
-from langchain.prompts import PromptTemplate
-
 tool_names = [tool.name for tool in tools]
-prompt_template = PromptTemplate(
-    input_variables=["tools", "tool_names", "input", "agent_scratchpad"],
-    template="""
-You are a diabetic assistant. 
-Your role is to assist users in managing type 1 diabetes.
-'placeholder' {chat_history}
-You can use the following tools:
-{tools}
 
-When answering, follow this format exactly:
-Thought: You could think about what to do
-Action: You may take one of this actions if you think so [{tool_names}]
-Action Input: Firstly, decide if you need to use a tool
 
-Then, after observing the result of the action, continue the thought process and provide a final answer if ready.
 
-Begin!
+from get_agent import Agent
 
-Question: {input}
-
-{agent_scratchpad}
-"""
-)
-
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_core.chat_history import InMemoryChatMessageHistory
-model = ChatOpenAI(model_name="gpt-4o-mini")
-memory = InMemoryChatMessageHistory(session_id="test-session")
-agent = create_react_agent(llm=model, tools=tools, prompt=prompt_template)
-agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, return_intermediate_steps=True, handle_parsing_errors=True)
-
-agent_with_chat_history = RunnableWithMessageHistory(
-    agent_executor,
-    lambda session_id: memory,
-    input_messages_key="input",
-    history_messages_key="chat_history",
-    output_messages_key="output"  # Ensure this key matches the output of your agent
-)
-config = {"configurable": {"session_id": "test-session"}}
-
+init_agent = Agent("gpt-4o-mini", tools = tools)
+agent = init_agent.agent_with_chat_history
+config = {"configurable": {"session_id": init_agent.session_id}}
 def run_assistant():
 
     while True:
         query = input(f"Human: ")
        
-        response = agent_with_chat_history.invoke({'input': query}, config)
+        response = agent.invoke({'input': query}, config)
 
         print(response)
 
