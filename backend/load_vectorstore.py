@@ -24,37 +24,6 @@ faiss_index.merge_from(faiss_index_1)
 
 model = ChatOpenAI(model_name="gpt-4o-mini")
 
-# def get_prompt_question(question, extended=False):
-
-#     docs = faiss_index.similarity_search(question)
-#     doc_content = {}
-#     new_line = '\n'
-
-#     for idx, doc in enumerate(docs):
-#         doc_content[f'doc_{idx}'] = doc.page_content
-
-#     docs_str = {''.join([f"{key}: {value}{new_line}" for key, value in doc_content.items()])}
-    
-
-#     message = HumanMessage(f"""
-#     Helpful documents:
-#     -------------------
-#     {docs_str}
-    
-
-#     Please respond to the following question:
-#     -----------------------------------------
-
-#     {question}
-#     """)
-
-#     if extended:
-#         return message, doc_content, question
-#     else:
-#         return message
-
-
-
 import json
 language = "English"
 
@@ -65,9 +34,6 @@ trimmer = trim_messages(
     include_system=True,
     allow_partial=False
 )
-
-
-
 
 from langchain.agents import initialize_agent, Tool
 from langchain_core.tools import tool
@@ -125,7 +91,7 @@ prompt_template = PromptTemplate(
     template="""
 You are a diabetic assistant. 
 Your role is to assist users in managing type 1 diabetes.
-
+'placeholder' {chat_history}
 You can use the following tools:
 {tools}
 
@@ -144,57 +110,29 @@ Question: {input}
 """
 )
 
-
-
-
+from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.chat_history import InMemoryChatMessageHistory
+memory = InMemoryChatMessageHistory(session_id="test-session")
 agent = create_react_agent(llm=model, tools=tools, prompt=prompt_template)
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, return_intermediate_steps=True, handle_parsing_errors=True)
 
+agent_with_chat_history = RunnableWithMessageHistory(
+    agent_executor,
+    lambda session_id: memory,
+    input_messages_key="input",
+    history_messages_key="chat_history",
+    output_messages_key="output"  # Ensure this key matches the output of your agent
+)
+config = {"configurable": {"session_id": "test-session"}}
 
 def run_assistant():
     messages_lst = [assistant_instruction]
     while True:
         query = input(f"Len: {len(messages_lst)} Human: ")
-
-        # message, doc_content, question = get_prompt_question(query, True)
-        messages_lst.append(query)
-
-        
-        response = agent_executor.invoke({'input': query})
+       
+        response = agent_with_chat_history.invoke({'input': query}, config)
 
         print(response)
 
-        model_response = AIMessage(response['output'])
-        model_response.pretty_print()
-
-        messages_lst.append(model_response)
-        messages_lst = trimmer.invoke(messages_lst)
 
 run_assistant()
-# result = get_relevent_docs({"question": "I like fish and chips", "extended": True})
-
-# print(result)
-
-# from langchain.load.dump import dumps
-
-# messages_string = dumps(messages.content, ensure_ascii=False, pretty = True)
-# doc_content = dumps(doc_content, ensure_ascii=False, pretty = True)
-# question = dumps(question, ensure_ascii=False, pretty = True)
-
-# with open('json_exports/messages_string.json', 'w', encoding='utf-8') as f:
-#     f.write(messages.pretty_repr())
-
-
-# with open('json_exports/doc_content.json', 'w', encoding='utf-8') as f:
-#     f.write(doc_content)
-
-
-# with open('json_exports/question.json', 'w', encoding='utf-8') as f:
-#     f.write(question)
-
-
-# # response = model.invoke(messages)
-# # response_string = dumps(response, ensure_ascii=False, pretty = True)
-
-# # with open('response_string.json', 'w', encoding='utf-8') as f:
-# #     f.write(response_string)
