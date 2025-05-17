@@ -1,6 +1,6 @@
 from langchain_community.vectorstores import FAISS
 from langchain_openai import ChatOpenAI
-from process_pdf import ProcessPDF
+from processing.process_pdf import ProcessPDF
 
 def load_faiss_index(file_name):
     pp = ProcessPDF(file_name)
@@ -49,7 +49,7 @@ tool_names = [tool.name for tool in tools]
 
 
 
-from get_agent import Agent
+from agents.get_agent import Agent
 
 init_agent = Agent("gpt-4o-mini", tools = tools)
 agent = init_agent.agent_with_chat_history

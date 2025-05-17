@@ -21,3 +21,7 @@ backend/faiss_index/index.pkl
 backend/json_exports/doc_content.json
 backend/json_exports/messages_string.json
 backend/json_exports/question.json
+backend/src/backend.egg-info/top_level.txt
+backend/src/backend.egg-info/PKG-INFO
+backend/src/backend.egg-info/dependency_links.txt
+backend/src/backend.egg-info/SOURCES.txt
