@@ -19,6 +19,8 @@ from chunking_evaluation.chunking import (
 )
 from chromadb.utils import embedding_functions
 
+BACKEND_DIR = os.getenv('BACKEND_DIR')
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 def openai_token_count(string: str) -> int:
     """Returns the number of tokens in a text string."""
@@ -42,16 +44,16 @@ class ProcessPDF:
         self.file_name = file_name
         self.origin_type = 'pdf'
 
-        self.base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.data_path = os.path.join(BACKEND_DIR, "data")
 
         # PDF location which will be processed
-        self.documents_dir = os.path.join(self.base_dir, "documents")
-        self.input_pdf_path = os.path.join(self.documents_dir, f"{file_name}.pdf")
+        self.raw_docs = os.path.join(self.data_path, "raw_docs")
+        self.input_pdf_path = os.path.join(self.raw_docs, f"{file_name}.pdf")
 
         # Output dir
-        self.output_dir = os.path.join(self.base_dir, "output")
-        self.temp_pdf_path = os.path.join(self.base_dir, "page_output.pdf")
-        self.file_output_dir = os.path.join(self.output_dir, self.file_name)
+        self.processed_docs = os.path.join(self.data_path, "processed_docs")
+        self.temp_pdf_path = os.path.join(self.data_path, "page_output.pdf")
+        self.file_output_dir = os.path.join(self.processed_docs, self.file_name)
 
         self.json_output_dir = os.path.join(self.file_output_dir, "jsons")
         self.pkl_output_path = os.path.join(self.file_output_dir, f"{self.file_name}.pkl")
@@ -63,7 +65,7 @@ class ProcessPDF:
 
         self.vec_output_path = os.path.join(self.file_output_dir, f"{self.file_name}_vectorstore")
 
-        self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        self.openai_api_key = OPENAI_API_KEY
         self.embeddings = OpenAIEmbeddings()
 
         self.all_pages = None
