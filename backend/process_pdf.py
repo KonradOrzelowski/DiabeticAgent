@@ -157,29 +157,11 @@ class ProcessPDF:
         
         self.all_pages_clean_txt = re.sub(r'[^\x00-\x7F]+', '', self.all_pages_clean_txt) # Remove non-ASCII characters
         self.all_pages_clean_txt = self.all_pages_clean_txt.replace('“', '"').replace('”', '"').replace('’', "'") # Replace non-standard quotes with standard quotes
-        
-        # Trim leading and trailing spaces
-        # self.all_pages_clean_txt = self.all_pages_clean_txt.strip()
+    
 
         # Remove hyphenation at line breaks (e.g., "individu-\nals" → "individuals")
         self.all_pages_clean_txt = re.sub(r'-\n', '', self.all_pages_clean_txt)
 
-        # Replace remaining newlines with space (optional, for paragraph formatting)
-        # self.all_pages_clean_txt = self.all_pages_clean_txt.replace('\n', ' ')
-
-        # Clean up parentheses and extra spaces
-        # self.all_pages_clean_txt = re.sub(r"\([^()]*\)", "", self.all_pages_clean_txt)
-        # self.all_pages_clean_txt = re.sub(r"\s{2,}", " ", self.all_pages_clean_txt).strip()
-
-        # Split joined words (like "atpresentation" → "at presentation")
-        # words = []
-        # for word in self.all_pages_clean_txt.split():
-        #     if len(word) > avoid_splitting:  # Heuristic to avoid splitting short normal words
-        #         words.extend(wordninja.split(word))
-        #     else:
-        #         words.append(word)
-        
-        # self.all_pages_clean_txt = " ".join(words)
 
         # Split the self.all_pages_clean_txt into individual lines
         lines = self.all_pages_clean_txt.splitlines()
