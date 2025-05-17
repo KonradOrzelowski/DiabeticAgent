@@ -19,7 +19,13 @@ def load_faiss_index(file_name):
     pp.load_vectorestore()
     return pp.vectorstore
 
+faiss_index = load_faiss_index('dr_bernstein_diabetes_solution')
+faiss_index_1 = load_faiss_index('standards_of_care_2025')
+faiss_index.merge_from(faiss_index_1)
+
+
 # Define tool for document search
+docs_str = 'No stuff here!'
 @tool("Diabetes Document Search", parse_docstring=True)
 def get_relevent_docs(question: str, extended: bool = False) -> str:
     """
@@ -44,7 +50,7 @@ def get_relevent_docs(question: str, extended: bool = False) -> str:
 
 @app.get("/")
 def read_root():
-    query = 'Hi this is test'
+    query = 'Hi, gimme some docs about glucose spikes'
 
     init_agent = Agent("gpt-4o-mini", tools=[get_relevent_docs])
     agent = init_agent.agent_with_chat_history
@@ -56,6 +62,6 @@ def read_root():
     return {"response": response}
 
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+@app.get("/chunks/")
+def read_item():
+    return {"item_id": docs_str}

@@ -15,24 +15,28 @@ prompt_template = PromptTemplate(
         You can use the following tools:
         {tools}
 
-        When answering, follow this format exactly:
-        Thought: You could think about what to do
-        Action: You may take one of these actions if you think so from [{tool_names}]
-        Action Input: Firstly, decide if you need to use a tools
+        Important: You must **only** do one of the following at a time:
+        - If you are not ready to answer, use the format:  
+            Thought: You could think about what to do
+            Action: You may take one of these actions if you think so from [{tool_names}]
+            Action Input: Firstly, decide if you need to use a tools
+        - If you are ready to give the final answer, use the format:  
+        Final Answer:  
 
-        Then, after observing the result of the action, continue the thought process and provide a final answer if ready.
+        Never include both an Action and a Final Answer together.
 
         Begin!
 
         Question: {input}
 
         {agent_scratchpad}
+
     """
     )
 
 
 class Agent:
-    def __init__(self, model_name, tools, verbose = True):
+    def __init__(self, model_name, tools, verbose = True, max_iterations = 5):
         self.model_name = model_name
         self.model = ChatOpenAI(model_name=self.model_name)
 
@@ -40,6 +44,7 @@ class Agent:
         self.tool_names = [tool.name for tool in self.tools]
 
         self.verbose = verbose
+        self.max_iterations = max_iterations
 
         self.session_id = "test-session"
 
@@ -56,7 +61,8 @@ class Agent:
         self.agent_executor = AgentExecutor(
                                     agent=self.agent, tools=self.tools, verbose=self.verbose,
                                     return_intermediate_steps=True,
-                                    handle_parsing_errors=True
+                                    handle_parsing_errors=True,
+                                    max_iterations=self.max_iterations
                                     )
 
         self.agent_with_chat_history = RunnableWithMessageHistory(
