@@ -24,8 +24,6 @@ faiss_index_1 = load_faiss_index('standards_of_care_2025')
 faiss_index.merge_from(faiss_index_1)
 
 
-# Define tool for document search
-docs_str = 'No stuff here!'
 @tool("Diabetes Document Search", parse_docstring=True)
 def get_relevent_docs(question: str, extended: bool = False) -> str:
     """
@@ -43,16 +41,17 @@ def get_relevent_docs(question: str, extended: bool = False) -> str:
 
     for idx, doc in enumerate(docs):
         doc_content[f'doc_{idx}'] = doc.page_content
-
+     
     docs_str = ''.join([f"{key}: {value}{new_line}" for key, value in doc_content.items()])
 
-    return docs if extended else docs_str
+
+    return docs
 
 @app.get("/")
 def read_root():
     query = 'Hi, gimme some docs about glucose spikes'
 
-    init_agent = Agent("gpt-4o-mini", tools=[get_relevent_docs])
+    init_agent = Agent("gpt-4o-mini", tools=[get_relevent_docs], verbose=False)
     agent = init_agent.agent_with_chat_history
     config = {"configurable": {"session_id": init_agent.session_id}}
 
@@ -60,8 +59,3 @@ def read_root():
 
 
     return {"response": response}
-
-
-@app.get("/chunks/")
-def read_item():
-    return {"item_id": docs_str}

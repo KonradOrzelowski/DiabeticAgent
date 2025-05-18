@@ -3,6 +3,8 @@ set -a
 source .env
 set +a
 
+docker-compose up -d
+
 # Change directory to backend
 cd backend || exit
 
