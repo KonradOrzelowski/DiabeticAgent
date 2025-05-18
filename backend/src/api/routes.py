@@ -1,10 +1,20 @@
 from typing import Union
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from agents.get_agent import Agent
 
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # allow all origins
+    allow_credentials=False,  # must be False when allow_origins=["*"]
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 from langchain_community.vectorstores import FAISS
 from langchain_openai import ChatOpenAI
@@ -47,15 +57,35 @@ def get_relevent_docs(question: str, extended: bool = False) -> str:
 
     return docs
 
+import json
+from langchain_core.load import dumpd, dumps, load, loads
+
+# @app.get("/model/")
+# def read_root():
+#     query = 'Hi, gimme some docs about glucose spikes'
+
+#     init_agent = Agent("gpt-4o-mini", tools=[get_relevent_docs], verbose=True)
+#     agent = init_agent.agent_with_chat_history
+#     config = {"configurable": {"session_id": init_agent.session_id}}
+
+#     response = agent.invoke({'input': query}, config)
+
+#     with open('response.json', 'w', encoding='utf-8') as f:
+#         dumps_response = dumps(response, pretty=True)
+#         json.dump(dumps_response, f, indent=4)
+
+#     return {"response": response}
+
+
 @app.get("/")
+async def main():
+    return {"message": "Hello World"}
+
+
+@app.get("/response/")
 def read_root():
-    query = 'Hi, gimme some docs about glucose spikes'
-
-    init_agent = Agent("gpt-4o-mini", tools=[get_relevent_docs], verbose=False)
-    agent = init_agent.agent_with_chat_history
-    config = {"configurable": {"session_id": init_agent.session_id}}
-
-    response = agent.invoke({'input': query}, config)
-
+    with open('response.json', 'r', encoding='utf-8') as f:
+        contents = json.load(f)
+        response = loads(contents)
 
     return {"response": response}
