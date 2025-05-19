@@ -19,6 +19,15 @@ function App() {
     };
     
 
+    const sendData = async () => {
+
+        const { data } = await Axios.post("http://127.0.0.1:8000/question/", {
+            message: inputValue,
+        });
+        console.log("POST response:", data);
+
+    };
+
     useEffect(() => {
         fetchProducts();
         console.log('!!!!!!!!!!!!!!!!')
@@ -59,11 +68,13 @@ function App() {
                     placeholder="Type your query..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={(e) => {
+                    onKeyDown={async (e) => {
                         if (e.key === 'Enter') {
                             alert(inputValue);
                             setInputValue('');
-                            setPressEnter(~pressEnter)
+                            
+                            await sendData();
+                            setPressEnter(prev => !prev);
                         }
                     }}
                     className="input-box"

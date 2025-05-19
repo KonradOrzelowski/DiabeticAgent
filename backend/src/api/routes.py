@@ -81,6 +81,12 @@ from langchain_core.load import dumpd, dumps, load, loads
 async def main():
     return {"message": "Hello World"}
 
+@app.post("/question/")
+async def main():
+    return {"message": "question question"}
+
+
+
 
 @app.get("/response/")
 def read_root():
