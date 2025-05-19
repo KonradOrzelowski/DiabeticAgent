@@ -3,7 +3,12 @@
   gap: 1rem;
 }
 
-.output,
-.docs {
+.output{
+  flex: 1; 
+}
+
+.docs{
+  height: 75vh;
+  overflow-y: scroll;
   flex: 1; 
 }
