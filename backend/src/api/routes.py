@@ -75,18 +75,27 @@ from langchain_core.load import dumpd, dumps, load, loads
 #         json.dump(dumps_response, f, indent=4)
 
 #     return {"response": response}
-
+from pydantic import BaseModel
 
 @app.get("/")
 async def main():
     return {"message": "Hello World"}
 
+class Item(BaseModel):
+    message: str
+
 @app.post("/question/")
-async def main():
-    return {"message": "question question"}
+async def test_post(data: Item):
+    # print(data.message)
+    init_agent = Agent("gpt-4o-mini", tools=[get_relevent_docs], verbose=True)
+    agent = init_agent.agent_with_chat_history
+    config = {"configurable": {"session_id": init_agent.session_id}}
+
+    response = agent.invoke({'input': data.message}, config)
 
 
 
+    return {"message": response}
 
 @app.get("/response/")
 def read_root():

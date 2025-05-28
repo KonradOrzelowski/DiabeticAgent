@@ -25,12 +25,13 @@ function App() {
             message: inputValue,
         });
         console.log("POST response:", data);
+        const products = data;
+        setProducts(products);
 
     };
 
     useEffect(() => {
         fetchProducts();
-        console.log('!!!!!!!!!!!!!!!!')
     }, [pressEnter]);
 
     try {
@@ -70,7 +71,7 @@ function App() {
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={async (e) => {
                         if (e.key === 'Enter') {
-                            alert(inputValue);
+                            console.log(inputValue)
                             setInputValue('');
                             
                             await sendData();

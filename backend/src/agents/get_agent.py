@@ -7,29 +7,34 @@ from langchain.agents.react.agent import create_react_agent
 from langchain.agents import AgentExecutor
 
 prompt_template = PromptTemplate(
-    # input_variables=["tools", "tool_names", "input", "agent_scratchpad", "chat_history"],
     template="""
         You are a diabetic assistant. 
         Your role is to assist users in managing type 1 diabetes.
+
         {chat_history}
+
         You can use the following tools:
         {tools}
 
-        Important: You must **only** do one of the following at a time:
-        - If you are not ready to answer, use the format:  
-            Thought: You could think about what to do
-            Action: You may take one of these actions if you think so from [{tool_names}]
-            Action Input: Firstly, decide if you need to use a tools
-        - If you are ready to give the final answer, use the format:  
-        Final Answer:  
+        You must respond by doing **only one of the following**:
+        - If you need more information, respond with:
+            Thought: Describe your reasoning.
+            Action: Choose one tool from [{tool_names}]
+            Action Input: What you want to use the tool for.
+        - If you are ready to answer the question, respond with:
+            Final Answer: [your answer]
 
-        Never include both an Action and a Final Answer together.
+        ⚠️ Important rules:
+        - Never provide both an Action and Final Answer at the same time.
+        - Once you have enough information or the tools are not useful, you **must** give a Final Answer.
+        - Repeating the same tools or actions multiple times is not allowed.
 
         Begin!
 
         Question: {input}
 
         {agent_scratchpad}
+
 
     """
     )
@@ -41,7 +46,9 @@ class Agent:
         self.model = ChatOpenAI(model_name=self.model_name)
 
         self.tools = tools
-        self.tool_names = [tool.name for tool in self.tools]
+
+        tools_str = "\n".join([f"- {tool.name}: {tool.description}" for tool in self.tools])
+        tool_names_str = ", ".join([tool.name for tool in self.tools])
 
         self.verbose = verbose
         self.max_iterations = max_iterations
@@ -50,8 +57,7 @@ class Agent:
 
         self.memory = InMemoryChatMessageHistory(session_id=self.session_id)
 
-        self.prompt_template = prompt_template
-        self.prompt_template.partial(tools = self.tools, tool_names = self.tool_names)
+        self.prompt_template = prompt_template.partial(tools = tools_str, tool_names = tool_names_str)
 
         self.agent = create_react_agent(llm=self.model,
                                         tools=self.tools,
@@ -70,7 +76,7 @@ class Agent:
             lambda session_id: self.memory,
             input_messages_key="input",
             history_messages_key="chat_history",
-            output_messages_key="output"  # Ensure this key matches the output of your agent
+            output_messages_key="output"
         )
 
 
