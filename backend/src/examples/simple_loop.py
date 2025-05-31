@@ -37,14 +37,14 @@ def get_relevent_docs(question: str, extended: bool = False) -> str:
 
 
 def run_assistant():
-    init_agent = Agent("gpt-4o-mini", tools=[get_relevent_docs])
+    init_agent = Agent("gpt-4o-mini", tools=[get_relevent_docs], verbose = False)
     agent = init_agent.agent_with_chat_history
     config = {"configurable": {"session_id": init_agent.session_id}}
 
     while True:
         query = input(f"Human: ")
         response = agent.invoke({'input': query}, config)
-        print(response)
+        print(response['output'])
 
 if __name__ == "__main__":
     faiss_index = load_faiss_index('dr_bernstein_diabetes_solution')

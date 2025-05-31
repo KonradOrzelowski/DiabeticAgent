@@ -84,11 +84,25 @@ async def main():
 class Item(BaseModel):
     message: str
 
+from langchain_core.chat_history import InMemoryChatMessageHistory
+
+chats_by_session_id = {}
+
+
+def get_chat_history(session_id: str) -> InMemoryChatMessageHistory:
+    chat_history = chats_by_session_id.get(session_id)
+    if chat_history is None:
+        chat_history = InMemoryChatMessageHistory()
+        chats_by_session_id[session_id] = chat_history
+    return chat_history
+
+init_agent = Agent("gpt-4o-mini", tools=[get_relevent_docs], verbose=True)
+agent = init_agent.agent_with_chat_history
+
 @app.post("/question/")
 async def test_post(data: Item):
     # print(data.message)
-    init_agent = Agent("gpt-4o-mini", tools=[get_relevent_docs], verbose=True)
-    agent = init_agent.agent_with_chat_history
+
     config = {"configurable": {"session_id": init_agent.session_id}}
 
     response = agent.invoke({'input': data.message}, config)
