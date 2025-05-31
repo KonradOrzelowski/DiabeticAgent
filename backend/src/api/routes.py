@@ -1,9 +1,10 @@
+import json
 from typing import Union
 from fastapi import FastAPI
+from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
 from agents.get_agent import Agent
-
 
 app = FastAPI()
 
@@ -15,12 +16,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 from langchain_community.vectorstores import FAISS
 from langchain_openai import ChatOpenAI
 from processing.process_pdf import ProcessPDF
 from langchain.agents import initialize_agent, Tool
 from langchain_core.tools import tool
+from langchain_core.load import dumpd, dumps, load, loads
+
 from agents.get_agent import Agent
 
 # Load and merge FAISS indices
@@ -57,26 +59,6 @@ def get_relevent_docs(question: str, extended: bool = False) -> str:
 
     return docs
 
-import json
-from langchain_core.load import dumpd, dumps, load, loads
-
-# @app.get("/model/")
-# def read_root():
-#     query = 'Hi, gimme some docs about glucose spikes'
-
-#     init_agent = Agent("gpt-4o-mini", tools=[get_relevent_docs], verbose=True)
-#     agent = init_agent.agent_with_chat_history
-#     config = {"configurable": {"session_id": init_agent.session_id}}
-
-#     response = agent.invoke({'input': query}, config)
-
-#     with open('response.json', 'w', encoding='utf-8') as f:
-#         dumps_response = dumps(response, pretty=True)
-#         json.dump(dumps_response, f, indent=4)
-
-#     return {"response": response}
-from pydantic import BaseModel
-
 @app.get("/")
 async def main():
     return {"message": "Hello World"}
@@ -84,30 +66,14 @@ async def main():
 class Item(BaseModel):
     message: str
 
-from langchain_core.chat_history import InMemoryChatMessageHistory
-
-chats_by_session_id = {}
-
-
-def get_chat_history(session_id: str) -> InMemoryChatMessageHistory:
-    chat_history = chats_by_session_id.get(session_id)
-    if chat_history is None:
-        chat_history = InMemoryChatMessageHistory()
-        chats_by_session_id[session_id] = chat_history
-    return chat_history
-
 init_agent = Agent("gpt-4o-mini", tools=[get_relevent_docs], verbose=True)
 agent = init_agent.agent_with_chat_history
 
 @app.post("/question/")
 async def test_post(data: Item):
-    # print(data.message)
-
     config = {"configurable": {"session_id": init_agent.session_id}}
 
     response = agent.invoke({'input': data.message}, config)
-
-
 
     return {"message": response}
 
