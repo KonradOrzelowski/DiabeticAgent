@@ -3,6 +3,8 @@ import "./App.css";
 import Axios from "axios";
 
 import ReactMarkdown from 'react-markdown';
+import CalendarHeatmap from 'react-calendar-heatmap';
+import 'react-calendar-heatmap/dist/styles.css';
 
 
 
@@ -37,6 +39,27 @@ function App() {
 
     return (
         <div>
+
+            <div style={{
+            width: '50%',
+            height: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid #ccc' // optional: just to see the border
+            }}>
+            <CalendarHeatmap
+                startDate={new Date('2016-01-01')}
+                endDate={new Date('2016-04-01')}
+                values={[
+                { date: '2016-01-01', count: 12 },
+                { date: '2016-01-22', count: 122 },
+                { date: '2016-01-30', count: 38 }
+                ]}
+            />
+            </div>
+
+
             <div className="response">
 
                 <div className="output">
