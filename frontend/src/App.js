@@ -9,7 +9,6 @@ import 'react-calendar-heatmap/dist/styles.css';
 
 
 function App() {
-    const [products, setProducts] = useState([]);
     const [inputValue, setInputValue] = useState("");
 
     const [output, setOutput] = useState(false);
@@ -18,8 +17,12 @@ function App() {
 
     const fetchProducts = async () => {
         const { data } = await Axios.get("http://127.0.0.1:8000/response/");
-        const products = data;
-        setProducts(products);
+
+        const response = data.message;
+        const steps = response.intermediate_steps?.[0]?.[1];
+       
+        setOutput(response.output);
+        setIntermediateSteps(Array.isArray(steps) ? steps : []);
     };
     
 

@@ -1,20 +1,16 @@
 import json
 from typing import Union
-from fastapi import FastAPI
+
 from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
+
 
 from agents.get_agent import Agent
 
-app = FastAPI()
+from fastapi import APIRouter
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # allow all origins
-    allow_credentials=False,  # must be False when allow_origins=["*"]
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+router = APIRouter()
+
+
 
 from langchain_community.vectorstores import FAISS
 from langchain_openai import ChatOpenAI
@@ -59,7 +55,7 @@ def get_relevent_docs(question: str, extended: bool = False) -> str:
 
     return docs
 
-@app.get("/")
+@router.get("/")
 async def main():
     return {"message": "Hello World"}
 
@@ -69,7 +65,7 @@ class Item(BaseModel):
 init_agent = Agent("gpt-4o-mini", tools=[get_relevent_docs], verbose=True)
 agent = init_agent.agent_with_chat_history
 
-@app.post("/question/")
+@router.post("/question/")
 async def test_post(data: Item):
     config = {"configurable": {"session_id": init_agent.session_id}}
 
@@ -77,7 +73,7 @@ async def test_post(data: Item):
 
     return {"message": response}
 
-@app.get("/response/")
+@router.get("/response/")
 def read_root():
     with open('response.json', 'r', encoding='utf-8') as f:
         contents = json.load(f)
