@@ -97,7 +97,6 @@ class getReadings:
         else:
             # All data
             query = {}
-        print(query)
         return query
 
     def get_bolus_wizard(self, **kwargs):
@@ -108,29 +107,19 @@ class getReadings:
                 **self._build_date_query('created_at', **kwargs)
             }
             
-        print(query)
 
         return self.get_data_from_collection(collection_name, query)
 
     def get_insulin_carbs(self, **kwargs):
         collection_name = 'Treatments'
 
-        date_query = {}
-        if dates:
-            date_query = self._build_date_query('created_at', dates=dates)
-        else:
-            if isinstance(start_date, str):
-                start_date = datetime.fromisoformat(start_date)
-            if isinstance(end_date, str):
-                end_date = datetime.fromisoformat(end_date)
-            date_query = self._build_date_query('created_at', start_date=start_date, end_date=end_date)
 
         query = {
             '$or': [
                 {'insulin': {'$exists': True}},
                 {'carbs': {'$exists': True}}
             ],
-            **date_query
+            **self._build_date_query('created_at', **kwargs)
         }
 
         return self.get_data_from_collection(collection_name, query)
@@ -138,35 +127,19 @@ class getReadings:
     def get_sgv(self, **kwargs):
         collection_name = 'Entries'
 
-        if dates:
-            query = self._build_date_query('dateString', dates=dates)
-        else:
-            if isinstance(start_date, str):
-                start_date = datetime.fromisoformat(start_date)
-            if isinstance(end_date, str):
-                end_date = datetime.fromisoformat(end_date)
-            query = self._build_date_query('dateString', start_date=start_date, end_date=end_date)
-
-        query['sgv'] = {'$exists': True}
+        query = {    
+            'sgv': {'$exists': True},
+            **self._build_date_query('dateString', **kwargs)
+        }
 
         return self.get_data_from_collection(collection_name, query)
 
     def get_temp_basal(self, **kwargs):
         collection_name = 'Treatments'
 
-        if dates:
-            query = {
-                'rate': {'$exists': True},
-                **self._build_date_query('created_at', dates=dates)
-            }
-        else:
-            if isinstance(start_date, str):
-                start_date = datetime.fromisoformat(start_date)
-            if isinstance(end_date, str):
-                end_date = datetime.fromisoformat(end_date)
-            query = {
-                'rate': {'$exists': True},
-                **self._build_date_query('created_at', start_date=start_date, end_date=end_date)
-            }
+        query = {
+            'rate': {'$exists': True},
+            **self._build_date_query('created_at', **kwargs)
+        }
 
         return self.get_data_from_collection(collection_name, query)
