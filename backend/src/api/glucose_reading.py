@@ -1,21 +1,4 @@
-# from pydantic import BaseModel
-
 from utils.get_readings import getReadings
-
-
-
-
-# res = gt.get_sgv(start_date = '2024-01-01', end_date = '2024-01-08')
-
-
-# res['date'] = res['created_at'].dt.date
-
-# average_sgg_by_date = res.groupby('date')['sgv'].mean().round(2).reset_index()
-# json_result = average_sgg_by_date.to_json(orient='records', date_format='iso')
-
-# print(json_result)
-# print(average_sgg_by_date)
-
 
 from typing import List, Optional
 from pydantic import BaseModel
