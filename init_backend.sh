@@ -10,3 +10,7 @@ cd backend || exit
 
 # Activate virtual environment
 source .venv/bin/activate
+
+cd src/api
+
+fastapi dev app.py
