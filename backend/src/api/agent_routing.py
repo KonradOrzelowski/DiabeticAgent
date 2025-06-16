@@ -1,5 +1,5 @@
 import json
-from typing import Union
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -61,6 +61,7 @@ async def main():
 
 class Item(BaseModel):
     message: str
+    image: Optional[str] = None
 
 init_agent = Agent("gpt-4o-mini", tools=[get_relevent_docs], verbose=True)
 agent = init_agent.agent_with_chat_history
@@ -69,7 +70,11 @@ agent = init_agent.agent_with_chat_history
 async def test_post(data: Item):
     config = {"configurable": {"session_id": init_agent.session_id}}
 
-    response = agent.invoke({'input': data.message}, config)
+    if data.image is not None:
+        print({'input': f'Using this image: {data.image} respond to message. {data.message}'})
+        response = agent.invoke({'input': f'Using this image: {data.image} respond to message. {data.message}'}, config)
+    else:
+        response = agent.invoke({'input': data.message}, config)
 
     return {"message": response}
 

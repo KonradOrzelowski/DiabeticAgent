@@ -13,9 +13,18 @@ async function getHeatmap(){
     if (!heatmapElement) return;
 
     const canvas = await html2canvas(heatmapElement);
-    const imageData = canvas.toDataURL('image/png');
-    const base64Image = imageData.split(',')[1];
-    return base64Image
+    const blob = await new Promise((resolve) =>{
+        canvas.toBlob((blob) => {
+            resolve(blob)
+        },'image/png')
+    })
+
+    
+    
+    const binaryBlob = new FormData();
+    binaryBlob.append('file', blob, 'heatmap.png');
+
+    return binaryBlob
 }
 
 
@@ -29,6 +38,7 @@ function App() {
 
         const imageToSend = await getHeatmap();
 
+        console.log(imageToSend)
 
         const { data } = await Axios.post("http://127.0.0.1:8000/question/", {
             message: inputValue,
