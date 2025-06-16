@@ -6,6 +6,17 @@ import ReactMarkdown from 'react-markdown';
 
 import { GlucoseHeatMap } from "./components/GlucoseHeatMap/GlucoseHeatMap";
 
+import html2canvas from 'html2canvas';
+
+async function getHeatmap(){
+    const heatmapElement = document.querySelector('.GlucoseHeatMaps');
+    if (!heatmapElement) return;
+
+    const canvas = await html2canvas(heatmapElement);
+    const imageData = canvas.toDataURL('image/png');
+    const base64Image = imageData.split(',')[1];
+    return base64Image
+}
 
 
 function App() {
@@ -14,10 +25,14 @@ function App() {
     const [output, setOutput] = useState(false);
     const [intermediateSteps, setIntermediateSteps] = useState([]);
 
-    const sendData = async () => {
+    async function sendData(){
+
+        const imageToSend = await getHeatmap();
+
 
         const { data } = await Axios.post("http://127.0.0.1:8000/question/", {
             message: inputValue,
+            image: imageToSend
         });
 
         const response = data.message;

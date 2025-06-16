@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import { Tooltip } from 'react-tooltip';
 
-
 import Axios from "axios";
 
 import 'react-calendar-heatmap/dist/styles.css';
 import './GlucoseHeatMap.css';
 
-const sendData = async () => {
+
+async function sendData(){
     const response = await Axios.post("http://127.0.0.1:8000/glucose-readings/", {
         "aggregation": "mean",
         "start_date": "2022-08-21",
