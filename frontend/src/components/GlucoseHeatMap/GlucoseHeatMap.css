@@ -2,35 +2,73 @@
     width: 50%;
     height: 50%;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
+}   
+
+.GlucoseHeatMaps {
+    display: flex;
+    align-items: center;
     border: 1px solid #ccc;
 }
 
-.low-sugar{
-    fill: blue
+
+h3{
+    text-align: center;
 }
 
-.lower-in-range-sugar{
-    fill:rgb(0, 128, 79)
+
+.low-sugar {
+    fill: #0074D9; /* standard blue */
 }
 
-.in-range-sugar{
-    fill:green
+.lower-in-range-sugar {
+    fill: #007A4D; /* teal-green */
 }
 
-.upper-in-range-sugar{
-    fill:rgb(79, 128, 0)
+.in-range-sugar {
+    fill: #00B87B; /* mint green */
 }
 
-.risen-sugar{
-    fill:orange
+.upper-in-range-sugar {
+    fill: #7DB700; /* lime green */
 }
 
-.high-sugar{
-    fill:red
+.risen-sugar {
+    fill: #FFB400; /* orange */
 }
 
-.very-high-sugar{
-    fill: black
+.high-sugar {
+    fill: #FF4136; /* bright red */
 }
+
+.very-high-sugar {
+    fill: #8B0000; /* dark red */
+}
+
+.critical-sugar {
+    fill: #000000; /* black */
+}
+
+.GlucoseHeatLegend{
+    padding-left: 2vw;
+}
+
+.sugar-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+  }
+  
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.color-box {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+  }

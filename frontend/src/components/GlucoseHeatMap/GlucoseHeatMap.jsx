@@ -18,7 +18,7 @@ const sendData = async () => {
 };
 
 export function GlucoseHeatMap() {
-    const [boo, setBoo] = useState([]);
+    const [dataForYears, setDataForYears] = useState([]);
     const [heatmapData, setHeatmapData] = useState([]);
     const [minDate, setMinDate] = useState(null);
     const [maxDate, setMaxDate] = useState(null);
@@ -26,7 +26,7 @@ export function GlucoseHeatMap() {
     useEffect(() => {
         async function fetchData() {
             let values = [];
-            let boo = {};
+            let dataForYears = {};
 
             const res = await sendData();
             const array = JSON.parse(res.data);
@@ -38,10 +38,10 @@ export function GlucoseHeatMap() {
                 const timestamp = new Date(element.date);
                 const year = timestamp.getFullYear();
                 
-                if(!boo.hasOwnProperty(year)){
-                    boo[year] = []
+                if(!dataForYears.hasOwnProperty(year)){
+                    dataForYears[year] = []
                 }
-                boo[year].push({
+                dataForYears[year].push({
                     date: new Date(element.date),
                     sgv: element.sgv,
                 })
@@ -55,8 +55,8 @@ export function GlucoseHeatMap() {
                 });
             }
 
-            console.log(boo)
-            setBoo(boo)
+            console.log(dataForYears)
+            setDataForYears(dataForYears)
             setHeatmapData(values);
             setMinDate(new Date(min));
             setMaxDate(new Date(max));
@@ -67,53 +67,99 @@ export function GlucoseHeatMap() {
     }, []);
 
     return (
-        
-
-
-        <div className='GlucoseHeatMap'>
-            {
-                Object.keys(boo).map(key => (
-                    console.log(boo[key])
-                ))
-            }
-
-            {/* <CalendarHeatmap
-
-                startDate={minDate}
-                endDate={maxDate}
-                values={heatmapData}
-                classForValue={value => {
-                    try{
-                        if (!value.sgv) return 'color-empty';
-                        if (value.sgv < 50) return 'low-sugar';
-                        if (value.sgv >= 50 && value.sgv < 80) return 'lower-in-range-sugar';
-                        if (value.sgv >= 100 && value.sgv < 120) return 'in-range-sugar';
-                        if (value.sgv >= 120 && value.sgv < 140) return 'upper-in-range-sugar';
-                        if (value.sgv > 140 && value.sgv < 180) return 'high-sugar';
-                        if (value.sgv >= 180) return 'very-high-sugar';
-                        return 'risen-sugar'; // Fallback or you can adjust this logic
-                    }
-                    catch(e){
-                        return 'color-empty';
-                    }
-                    
-                }}
-                tooltipDataAttrs={value => {
-                    if (!value || !value.date) return {};
-                    return {
-                    'data-tooltip-id': 'glucose-tooltip',
-                    'data-tooltip-content': `Date: ${value.date.toISOString().slice(0, 10)} | SGV: ${value.sgv}`,
-                    };
-                }}
-                showWeekdayLabels={true} 
+        <div className='GlucoseHeatMaps'>
+            <div className='GlucoseHeatMap'>
+            {Object.keys(dataForYears).map(key => (<div>
+                <h3>{`${key}`}</h3>
+                <CalendarHeatmap
+                
+                
+                    startDate={new Date(`01-01-${key}`)}
+                    endDate={new Date(`12-31-${key}`)}
+                    values={dataForYears[key]}
+                    classForValue={value => {
+                        try{
+                            if (!value.sgv) return 'color-empty';
+                            if (50 > value.sgv) return 'low-sugar';
+                            if (50 <= value.sgv && value.sgv < 80) return 'lower-in-range-sugar';
+                            if (80 <= value.sgv && value.sgv < 120) return 'in-range-sugar';
+                            if (120 <= value.sgv && value.sgv < 140) return 'upper-in-range-sugar';
+                            if (140 <= value.sgv && value.sgv < 180) return 'high-sugar';
+                            if (180 <= value.sgv && value.sgv < 220) return 'very-high-sugar';
+                            if (220 <= value.sgv) return 'critical-sugar';
+                            return 'color-empty'; 
+                        }
+                        catch(e){
+                            return 'color-empty';
+                        }
+                        
+                    }}
+                    tooltipDataAttrs={value => {
+                        if (!value || !value.date) return {};
+                        return {
+                        'data-tooltip-id': 'glucose-tooltip',
+                        'data-tooltip-content': `Date: ${value.date.toISOString().slice(0, 10)} | SGV: ${value.sgv}`,
+                        };
+                    }}
+                    showWeekdayLabels={true} 
             
-            />
-
+                />
+            </div>))}
             <Tooltip id="glucose-tooltip" place="top" />
-            */}
+        </div>
 
-
-
+            <div className='GlucoseHeatLegend'>
+                <div className="sugar-legend">
+                    <div className="legend-item">
+                        <svg className="color-box" width="20" height="20">
+                            <rect width="20" height="20" className="color-empty" />
+                        </svg>
+                        <span>No Data</span>
+                    </div>
+                    <div className="legend-item">
+                        <svg className="color-box" width="20" height="20">
+                            <rect width="20" height="20" className="low-sugar" />
+                        </svg>
+                        <span>Below 50 (Low Sugar)</span>
+                    </div>
+                    <div className="legend-item">
+                        <svg className="color-box" width="20" height="20">
+                            <rect width="20" height="20" className="lower-in-range-sugar" />
+                        </svg>
+                        <span>50–79 (Lower In Range)</span>
+                    </div>
+                    <div className="legend-item">
+                        <svg className="color-box" width="20" height="20">
+                            <rect width="20" height="20" className="in-range-sugar" />
+                        </svg>
+                        <span>80–119 (In Range)</span>
+                    </div>
+                    <div className="legend-item">
+                        <svg className="color-box" width="20" height="20">
+                            <rect width="20" height="20" className="upper-in-range-sugar" />
+                        </svg>
+                        <span>120–139 (Upper In Range)</span>
+                    </div>
+                    <div className="legend-item">
+                        <svg className="color-box" width="20" height="20">
+                            <rect width="20" height="20" className="high-sugar" />
+                        </svg>
+                        <span>140–179 (High Sugar)</span>
+                    </div>
+                    <div className="legend-item">
+                        <svg className="color-box" width="20" height="20">
+                            <rect width="20" height="20" className="very-high-sugar" />
+                        </svg>
+                        <span>180–219 (Very High Sugar)</span>
+                    </div>
+                    <div className="legend-item">
+                        <svg className="color-box" width="20" height="20">
+                            <rect width="20" height="20" className="critical-sugar" />
+                        </svg>
+                        <span>220+ (Critical)</span>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
