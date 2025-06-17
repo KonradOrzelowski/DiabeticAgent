@@ -45,6 +45,7 @@ function App() {
             // message: 'inputValue',
             image: imageToSend
         });
+        console.log(data)
         console.log(data.message)
         // const response = data.message;
         // const steps = response.intermediate_steps?.[0]?.[1];

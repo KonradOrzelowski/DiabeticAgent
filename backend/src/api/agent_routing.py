@@ -68,26 +68,40 @@ from openai import OpenAI
 
 client = OpenAI()
 
+from langchain.chat_models import ChatOpenAI
+from langchain.schema import HumanMessage
+
+# Initialize model
+chat = ChatOpenAI(
+    model="gpt-4o-mini",
+    temperature=0
+)
+
+
 @router.post("/question/")
 async def test_post(data: Item):
-        
-    response = client.responses.create(
-        model="gpt-4o-mini",
-        input=[
-            {
-                "role": "user",
-                "content": [
-                    { "type": "input_text", "text": "what's in this image?" },
-                    {
-                        "type": "input_image",
-                        "image_url": f"{data.image}",
-                    },
-                ],
+    message_content = [
+        {
+            "type": "text",
+            "text": "what's in this image?"
+        },
+        {
+            "type": "image_url",
+            "image_url": {
+                "url": "https://raw.githubusercontent.com/kevinsqi/react-calendar-heatmap/HEAD/demo/public/react-calendar-heatmap.png?raw=true"
             }
-        ],
+        }
+    ]
+
+    human_message = HumanMessage(
+        content=message_content
     )
 
-    return {"message": response.output_text}
+    response = chat([human_message])
+    print(response.content)
+
+    return {"message": response.content}
+
 
 
 
