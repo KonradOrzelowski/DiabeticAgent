@@ -63,20 +63,42 @@ class Item(BaseModel):
     message: str
     image: Optional[str] = None
 
-init_agent = Agent("gpt-4o-mini", tools=[get_relevent_docs], verbose=True)
-agent = init_agent.agent_with_chat_history
+import base64
+from openai import OpenAI
+
+client = OpenAI()
 
 @router.post("/question/")
 async def test_post(data: Item):
-    config = {"configurable": {"session_id": init_agent.session_id}}
+        
+    response = client.responses.create(
+        model="gpt-4o-mini",
+        input=[
+            {
+                "role": "user",
+                "content": [
+                    { "type": "input_text", "text": "what's in this image?" },
+                    {
+                        "type": "input_image",
+                        "image_url": f"{data.image}",
+                    },
+                ],
+            }
+        ],
+    )
 
-    if data.image is not None:
-        print({'input': f'Using this image: {data.image} respond to message. {data.message}'})
-        response = agent.invoke({'input': f'Using this image: {data.image} respond to message. {data.message}'}, config)
-    else:
-        response = agent.invoke({'input': data.message}, config)
+    return {"message": response.output_text}
 
-    return {"message": response}
+
+
+
+
+@router.post("/test_image/")
+def test_post_(data: Item):
+    # print(data)
+
+    return {"message": 'nse'}
+
 
 @router.get("/response/")
 def read_root():

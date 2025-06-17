@@ -13,18 +13,18 @@ async function getHeatmap(){
     if (!heatmapElement) return;
 
     const canvas = await html2canvas(heatmapElement);
-    const blob = await new Promise((resolve) =>{
-        canvas.toBlob((blob) => {
-            resolve(blob)
-        },'image/png')
-    })
 
-    
-    
-    const binaryBlob = new FormData();
-    binaryBlob.append('file', blob, 'heatmap.png');
+    const newCanvas = document.createElement('canvas');
+    const ctx = newCanvas.getContext('2d');
+    const scale = 0.3;  // 30% of original size
+    newCanvas.width = canvas.width * scale;
+    newCanvas.height = canvas.height * scale;
 
-    return binaryBlob
+    ctx.drawImage(canvas, 0, 0, newCanvas.width, newCanvas.height);
+
+    const base64Image = canvas.toDataURL("image/jpeg");
+
+    return base64Image
 }
 
 
@@ -38,18 +38,19 @@ function App() {
 
         const imageToSend = await getHeatmap();
 
-        console.log(imageToSend)
+        console.log('data', imageToSend)
 
         const { data } = await Axios.post("http://127.0.0.1:8000/question/", {
             message: inputValue,
+            // message: 'inputValue',
             image: imageToSend
         });
-
-        const response = data.message;
-        const steps = response.intermediate_steps?.[0]?.[1];
+        console.log(data.message)
+        // const response = data.message;
+        // const steps = response.intermediate_steps?.[0]?.[1];
        
-        setOutput(response.output);
-        setIntermediateSteps(Array.isArray(steps) ? steps : []);
+        // setOutput(response.output);
+        // setIntermediateSteps(Array.isArray(steps) ? steps : []);
 
     };
 
