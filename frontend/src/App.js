@@ -20,12 +20,11 @@ async function getHeatmap(){
 
 
 function App() {
-    const [inputValue, setInputValue] = useState("");
 
     const [output, setOutput] = useState(false);
     const [intermediateSteps, setIntermediateSteps] = useState([]);
 
-    async function sendData(){
+    async function sendData(inputValue){
 
         const imageToSend = await getHeatmap();
 
@@ -33,16 +32,10 @@ function App() {
 
         const { data } = await Axios.post("http://127.0.0.1:8000/question/", {
             message: inputValue,
-            // message: 'inputValue',
             image: imageToSend
         });
         console.log(data)
         console.log(data.message)
-        // const response = data.message;
-        // const steps = response.intermediate_steps?.[0]?.[1];
-       
-        // setOutput(response.output);
-        // setIntermediateSteps(Array.isArray(steps) ? steps : []);
 
     };
 
@@ -72,13 +65,12 @@ function App() {
             <input
                 type="text"
                 placeholder="Type your query..."
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={async (e) => {
-                    if (e.key === 'Enter') {
-                        setInputValue('');
-                        
-                        await sendData();
+
+                onKeyDown={async (event) => {
+                    if (event.key === 'Enter') {
+                        const inputValue = event.target.value;
+                        alert(inputValue)
+                        // await sendData(inputValue);
                     }
                 }}
                 className="input-box"

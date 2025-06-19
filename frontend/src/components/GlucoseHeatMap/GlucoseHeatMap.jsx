@@ -19,16 +19,17 @@ async function sendData(){
 
 export function GlucoseHeatMap() {
     const [dataForYears, setDataForYears] = useState([]);
-    const [heatmapData, setHeatmapData] = useState([]);
 
     useEffect(() => {
         async function fetchData() {
-            let values = [];
             let dataForYears = {};
 
             const res = await sendData();
             const array = JSON.parse(res.data);
-                
+
+            const start = Date.now();
+
+
             for (let element of array) {
                 const timestamp = new Date(element.date);
                 const year = timestamp.getFullYear();
@@ -37,13 +38,17 @@ export function GlucoseHeatMap() {
                     dataForYears[year] = []
                 }
                 dataForYears[year].push({
-                    date: new Date(element.date),
+                    date: timestamp,
                     sgv: element.sgv,
                 })
                 
             }
 
             setDataForYears(dataForYears);
+
+  
+            const end = Date.now();
+            console.log(`Time taken: ${end - start} ms`);
 
         }
 
