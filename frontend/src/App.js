@@ -13,15 +13,6 @@ async function getHeatmap(){
     if (!heatmapElement) return;
 
     const canvas = await html2canvas(heatmapElement);
-
-    // const newCanvas = document.createElement('canvas');
-    // const ctx = newCanvas.getContext('2d');
-    // const scale = 0.3;  // 30% of original size
-    // newCanvas.width = canvas.width * scale;
-    // newCanvas.height = canvas.height * scale;
-
-    // ctx.drawImage(canvas, 0, 0, newCanvas.width, newCanvas.height);
-
     const base64Image = canvas.toDataURL("image/jpeg");
 
     return base64Image

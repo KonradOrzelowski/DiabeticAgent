@@ -20,8 +20,6 @@ async function sendData(){
 export function GlucoseHeatMap() {
     const [dataForYears, setDataForYears] = useState([]);
     const [heatmapData, setHeatmapData] = useState([]);
-    const [minDate, setMinDate] = useState(null);
-    const [maxDate, setMaxDate] = useState(null);
 
     useEffect(() => {
         async function fetchData() {
@@ -30,10 +28,7 @@ export function GlucoseHeatMap() {
 
             const res = await sendData();
             const array = JSON.parse(res.data);
-
-            let min = Infinity;
-            let max = -Infinity;
-
+                
             for (let element of array) {
                 const timestamp = new Date(element.date);
                 const year = timestamp.getFullYear();
@@ -45,21 +40,10 @@ export function GlucoseHeatMap() {
                     date: new Date(element.date),
                     sgv: element.sgv,
                 })
-
-                if (timestamp < min) min = timestamp;
-                if (timestamp > max) max = timestamp;
                 
-                values.push({
-                    date: new Date(element.date),
-                    sgv: element.sgv,
-                });
             }
 
-            console.log(dataForYears)
-            setDataForYears(dataForYears)
-            setHeatmapData(values);
-            setMinDate(new Date(min));
-            setMaxDate(new Date(max));
+            setDataForYears(dataForYears);
 
         }
 
