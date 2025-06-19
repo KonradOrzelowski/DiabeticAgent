@@ -1,6 +1,6 @@
 .GlucoseHeatMap {
     width: 30vw;
-    height: 50%;
+    height: 50vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -10,7 +10,7 @@
     width: min-content;
     display: flex;
     align-items: center;
-    border: 1px solid #ccc;
+    /* border: 1px solid #ccc; */
 }
 
 

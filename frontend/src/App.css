@@ -1,4 +1,5 @@
 .response {
+  height: 50vh;
   display: flex;
   gap: 1rem;
 }
@@ -8,7 +9,22 @@
 }
 
 .docs{
-  height: 75vh;
-  overflow-y: scroll;
+  /* height: 75vh; */
+  /* overflow-y: scroll; */
   flex: 1; 
+}
+
+.content{
+  display: flex;
+  flex-direction: column;
+  align-items: center;  
+  justify-content: center;
+}
+
+.input-box{
+  position: fixed;
+  bottom: 10vh;
+  left: 40vw;
+
+  width: 20vw;
 }
